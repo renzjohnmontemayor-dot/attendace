@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Academy | Smart RFID Attendance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--maroon:#8e0000;--maroon-deep:#4b0000;--gold:#e6b500;--bg:#f3f0eb;--card:#fff;--text:#201613;--muted:#756863;--border:#dfd7d0;--green:#1a7a4a;--green-bg:#eaf7f1;--green-border:#a6d9be;--red:#b40000;--red-bg:#fdeaea;--red-border:#f1b7b7;--amber:#c47a00;--amber-bg:#fdf3e2;--amber-border:#efd095;--shadow:0 4px 16px rgba(0,0,0,.08);--display:"Libre Baskerville",Georgia,serif;--body:"DM Sans",Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh}button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.login-screen{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#330000,#8e0000 60%,#4b0000)}
+.login-box{width:100%;max-width:860px;background:#fff;border-top:5px solid var(--gold);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:.9fr 1.1fr;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.login-intro{padding:42px;background:var(--maroon-deep);color:#fff}.login-logo{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);margin-bottom:22px}.login-fallback{width:72px;height:72px;border-radius:50%;border:3px solid var(--gold);background:var(--maroon);color:var(--gold);display:flex;align-items:center;justify-content:center;font:bold 24px var(--display);margin-bottom:22px}.login-intro-copy{font:700 24px/1.5 var(--display);max-width:290px}.login-intro-note{margin-top:12px;font-size:12px;color:rgba(255,255,255,.7);line-height:1.6}.login-form-content{padding:42px}.login-title{font:700 28px var(--display);color:var(--maroon);margin-bottom:8px}.login-subtitle{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:24px}.login-field{margin-bottom:14px}.login-label,.form-label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted);margin-bottom:6px}.login-input,.form-input,.search-input,.date-input,.select-input{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:9px;background:#faf9f7;outline:none}.login-input:focus,.form-input:focus,.search-input:focus,.date-input:focus{border-color:var(--maroon);box-shadow:0 0 0 3px rgba(142,0,0,.09)}.login-btn{width:100%;border:0;border-radius:9px;padding:12px;background:var(--maroon);color:#fff;font-weight:800;margin-top:4px}.login-error{display:none;margin-top:12px;padding:10px;border-radius:8px;background:var(--red-bg);color:var(--red);font-size:12px;text-align:center}.login-error.show{display:block}.login-loading{display:none;margin-top:10px;color:var(--muted);font-size:12px;text-align:center}
+#app{display:none;min-height:100vh}.app-header{height:70px;display:flex;align-items:center;gap:12px;padding:0 20px;color:#fff;background:linear-gradient(135deg,var(--maroon-deep),var(--maroon));border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:100}.header-logo-wrap{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--gold);flex:none}.header-logo-wrap img{width:100%;height:100%;object-fit:cover}.header-titles{flex:1;min-width:0}.header-school{font:700 15px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.header-sub{font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-top:3px}.header-clock{text-align:right}.clock-time{font:700 17px monospace;color:var(--gold)}.clock-date{font-size:9px;color:rgba(255,255,255,.7)}.header-status{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:rgba(255,255,255,.1);font-size:10px;font-weight:800;text-transform:uppercase}.status-dot{width:7px;height:7px;border-radius:50%;background:var(--gold)}.status-dot.live{background:#4ade80}.status-dot.error{background:#ff6b6b}.header-queue-badge{display:none;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:rgba(255,193,7,.18);color:#ffe08a;font-size:10px;font-weight:800}.header-queue-badge.show{display:flex}.notif-btn,.logout-btn{padding:7px 10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;font-size:11px}.notif-btn.on{background:rgba(74,222,128,.2)}.role-pill{display:inline-block;padding:5px 9px;border-radius:999px;background:#fff8dc;color:var(--maroon-deep);font-size:10px;font-weight:800}
+.view-tabs{max-width:1400px;margin:15px auto 0;padding:0 18px;display:flex;gap:6px}.view-tab{border:1px solid var(--border);border-bottom:none;background:#ece7e0;color:var(--muted);padding:9px 14px;border-radius:9px 9px 0 0;font-size:11px;font-weight:800}.view-tab.active{background:#fff;color:var(--maroon)}.view-panel{display:none}.view-panel.active{display:block}
+.grade-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.grade-form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.grade-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.grade-status{font-size:11px;color:var(--muted);min-height:16px}.grade-table-wrap{overflow-x:auto}.grade-table{width:100%;border-collapse:collapse;font-size:11px;min-width:1050px}.grade-table th,.grade-table td{padding:9px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}.grade-table th{background:#f7f3ee;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}.grade-table tr:hover td{background:#fffaf7}.grade-number{font-family:monospace;font-weight:800}.grade-actions-cell{display:flex;gap:5px;white-space:nowrap}.grade-empty{padding:24px;text-align:center;color:var(--muted)}.grade-select{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:9px;background:#faf9f7;outline:none}.grade-select:focus{border-color:var(--maroon);box-shadow:0 0 0 3px rgba(142,0,0,.09)}@media(max-width:900px){.grade-form-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.grade-form-grid{grid-template-columns:1fr}.grade-actions .btn{flex:1}}
+.main-layout{max-width:1400px;margin:0 auto;padding:20px 18px 50px;display:grid;grid-template-columns:1fr 330px;gap:18px;grid-template-areas:"stats scan" "toolbar scan" "grid scan"}.stats-row{grid-area:stats;display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.stat-card,.panel-card,.profile-panel,.scan-history-panel,.print-panel{background:#fff;border:1px solid var(--border);box-shadow:var(--shadow)}.stat-card{padding:16px;border-radius:12px}.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:800}.stat-value{font:700 30px var(--display);margin-top:6px}.stat-card.present .stat-value{color:var(--green)}.stat-card.late .stat-value{color:var(--amber)}.stat-card.absent .stat-value{color:var(--red)}.stat-card.rate .stat-value{color:var(--amber)}.stat-card.risk{border-top:3px solid var(--red);cursor:pointer}.stat-card.risk .stat-value{color:var(--red)}.risk-summary{font-size:9px;color:var(--muted);margin-top:3px}.toolbar{grid-area:toolbar;display:flex;gap:9px;flex-wrap:wrap;align-items:center}.search-wrap{flex:1;min-width:210px;position:relative}.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}.search-input{padding-left:34px;background:#fff}.filter-chips{display:flex;gap:5px;flex-wrap:wrap}.chip{padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:999px;color:var(--muted);font-size:11px;font-weight:800}.chip.active{background:var(--maroon);border-color:var(--maroon);color:#fff}.chip.present.active{background:var(--green);border-color:var(--green)}.chip.late.active{background:var(--amber);border-color:var(--amber)}.chip.absent.active,.chip.risk.active{background:var(--red);border-color:var(--red)}.toolbar-actions{display:flex;gap:6px}.btn{padding:9px 12px;border:0;border-radius:8px;font-size:11px;font-weight:800}.btn-primary{background:var(--maroon);color:#fff}.btn-gold{background:var(--gold);color:var(--maroon-deep)}.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--muted)}.btn-sm{padding:6px 9px;font-size:10px}
+.grid-area{grid-area:grid;display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:12px}.student-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:var(--shadow)}.student-card.present-card{border-left:4px solid var(--green)}.student-card.late-card{border-left:4px solid var(--amber)}.student-card.absent-card{border-left:4px solid var(--red-border)}.student-card-header{display:flex;gap:9px;align-items:flex-start}.student-avatar,.profile-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--maroon),var(--gold));color:#fff;font-weight:800}.student-avatar{width:40px;height:40px;flex:none;font-size:13px}.student-info{flex:1;min-width:0}.student-name{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.student-id{font-size:10px;color:var(--muted);font-family:monospace}.student-section{font-size:11px;color:var(--muted);margin-top:9px}.status-badge{font-size:8px;padding:3px 7px;border-radius:999px;font-weight:800;text-transform:uppercase}.badge-present{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}.badge-late{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}.badge-absent{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}.risk-badge{display:inline-flex;margin-top:9px;padding:4px 7px;border-radius:999px;background:var(--red-bg);color:var(--red);font-size:8px;font-weight:800}.risk-streak{font-size:9px;color:var(--red);margin-top:3px}.student-times{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:1px solid var(--border);padding-top:9px;margin-top:10px}.time-block-label{font-size:8px;text-transform:uppercase;color:var(--muted);font-weight:800}.time-block-val{font-size:10px;font-family:monospace;font-weight:800;margin-top:2px}.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}.mark-student,.delete-student{padding:7px;border-radius:7px;font-size:10px;font-weight:800}.mark-student{border:1px solid var(--green-border);color:var(--green);background:var(--green-bg)}.delete-student{border:1px solid var(--red-border);color:var(--red);background:var(--red-bg)}
+.sidebar-scan{grid-area:scan;display:flex;flex-direction:column;gap:12px;position:sticky;top:84px;align-self:start}.scan-hero{background:linear-gradient(160deg,var(--maroon-deep),var(--maroon));border-radius:12px;padding:20px;color:#fff;min-height:155px;display:flex;flex-direction:column;justify-content:flex-end;box-shadow:0 14px 30px rgba(0,0,0,.16)}.scan-label{color:var(--gold);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}.scan-idle{text-align:center}.scan-idle-text{font-size:12px;color:rgba(255,255,255,.55);margin-top:6px}.scan-name{font:700 20px var(--display)}.scan-meta{font-size:10px;color:rgba(255,255,255,.68);margin:4px 0 9px}.scan-pill{display:inline-block;padding:5px 9px;border-radius:999px;font-size:9px;font-weight:800}.pill-present{background:rgba(26,122,74,.3);color:#79e3ae}.pill-timeout{background:rgba(230,181,0,.22);color:#ffe16b}.pill-unknown{background:rgba(255,107,107,.2);color:#ffadad}.scan-time-label{margin-top:6px;font-size:9px;color:rgba(255,255,255,.5);font-family:monospace}.history-header,.print-panel-title{padding:11px 13px;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}.history-list{max-height:250px;overflow:auto}.history-item{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--border)}.history-dot{width:7px;height:7px;border-radius:50%}.dot-present{background:var(--green)}.dot-timeout{background:var(--amber)}.dot-unknown{background:var(--red)}.history-info{flex:1;min-width:0}.history-name{font-size:11px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.history-time{font-size:9px;color:var(--muted);font-family:monospace}.history-badge{font-size:8px;font-weight:800}.hb-present{color:var(--green)}.hb-timeout{color:var(--amber)}.hb-unknown{color:var(--red)}.history-empty{padding:20px;text-align:center;color:var(--muted);font-size:11px}.print-panel{padding-bottom:12px}.print-row{display:flex;gap:7px;padding:10px;flex-wrap:wrap}.date-input{flex:1;min-width:120px}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);align-items:center;justify-content:center;padding:18px}.modal-overlay.open{display:flex}.modal{width:100%;max-width:500px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.3);max-height:90vh;display:flex;flex-direction:column}.modal-header{background:linear-gradient(135deg,var(--maroon-deep),var(--maroon));color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}.modal-title{font:700 16px var(--display)}.modal-close{border:0;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;font-size:20px}.modal-body{padding:20px;display:flex;flex-direction:column;gap:13px;overflow:auto}.form-field{display:flex;flex-direction:column}.rfid-row{display:flex;gap:7px}.rfid-row .form-input{flex:1}.modal-footer{display:flex;justify-content:flex-end;gap:7px;padding:13px 20px;background:#faf8f5;border-top:1px solid var(--border)}.scan-status-text{font-size:10px;min-height:15px}.detecting{color:var(--amber)}.detected{color:var(--green)}.failed{color:var(--red)}.form-hint{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5}
+.panel-card{max-width:1200px;margin:20px auto;padding:20px;border-radius:14px;overflow:auto}.panel-card h2{font-size:16px;margin-bottom:8px}.admin-table,.audit-list,.student-attendance-table{width:100%;border-collapse:collapse;font-size:12px}.admin-table th,.admin-table td,.audit-list th,.audit-list td,.student-attendance-table th,.student-attendance-table td{padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}.admin-table th,.audit-list th,.student-attendance-table th{background:#faf8f5;color:var(--muted);font-size:10px;text-transform:uppercase}.admin-inline-actions{display:flex;gap:5px;flex-wrap:wrap}
+
+.student-portal{display:none;min-height:100vh;background:var(--bg)}.student-portal-header{padding:16px 22px;background:var(--maroon-deep);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px}.student-portal-brand{display:flex;align-items:center;gap:10px}.student-portal-brand img{width:42px;height:42px;object-fit:contain;border-radius:8px;background:#fff}.student-portal-title{font-size:17px;font-weight:800}.student-portal-subtitle{font-size:10px;color:rgba(255,255,255,.7);margin-top:2px}.student-portal-main{max-width:1000px;margin:auto;padding:24px 18px 50px}.profile-hero{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;align-items:center;gap:15px;box-shadow:var(--shadow);margin-bottom:14px}.profile-avatar{width:72px;height:72px;font-size:24px;flex:none}.profile-name{font-size:23px;font-weight:800}.profile-meta{font-size:11px;color:var(--muted);margin:4px 0 7px}.profile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.profile-stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px}.profile-stat-label{font-size:10px;color:var(--muted);font-weight:800}.profile-stat-value{font-size:22px;font-weight:800;margin-top:5px}.profile-panel{border-radius:14px;padding:18px;margin-bottom:14px}.profile-panel h2{font-size:16px;margin-bottom:12px}.profile-details{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}.profile-detail{background:#faf8f5;border:1px solid var(--border);border-radius:9px;padding:12px}.profile-detail-label{font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:800}.profile-detail-value{margin-top:4px;font-size:12px;font-weight:800}
+.toast-container{position:fixed;right:16px;bottom:16px;z-index:9999;display:flex;flex-direction:column;gap:7px}.toast{padding:11px 14px;background:#fff;border-radius:9px;box-shadow:0 10px 30px rgba(0,0,0,.16);border-left:4px solid var(--maroon);font-size:12px;max-width:330px}.toast.success{border-left-color:var(--green)}.toast.error{border-left-color:var(--red)}.toast.info{border-left-color:var(--gold)}
+#admin-sidebar{display:none}.app-body{min-width:0}body.role-admin{background:#ece8e3}body.role-admin #app{display:flex;min-height:100vh;align-items:stretch}body.role-admin #admin-sidebar{display:flex;flex-direction:column;width:245px;flex:none;background:linear-gradient(180deg,#1f0000,#3b0000);color:#fff;padding:20px 14px;border-right:3px solid var(--gold)}body.role-admin .app-body{flex:1;display:flex;flex-direction:column}body.role-admin .app-header{background:#fff;color:var(--text);border-bottom:1px solid var(--border);box-shadow:none}body.role-admin .header-school{color:var(--maroon-deep)}body.role-admin .header-sub{color:var(--maroon)}body.role-admin .clock-time{color:var(--maroon)}body.role-admin .clock-date{color:var(--muted)}body.role-admin .header-status{background:#f5f1eb;color:var(--maroon)}body.role-admin .notif-btn,body.role-admin .logout-btn{color:var(--maroon);background:#fff;border-color:var(--border)}body.role-admin .view-tabs,body.role-admin .sidebar-scan{display:none}body.role-admin .main-layout{grid-template-columns:1fr;grid-template-areas:"stats" "toolbar" "grid";max-width:none}.admin-brand{display:flex;gap:10px;align-items:center;margin-bottom:24px}.admin-brand-mark{width:40px;height:40px;border-radius:9px;background:var(--gold);color:var(--maroon-deep);display:flex;align-items:center;justify-content:center;font:bold 17px var(--display)}.admin-brand-name{font-size:12px;font-weight:800}.admin-brand-role{font-size:9px;color:var(--gold);text-transform:uppercase;margin-top:3px}.admin-nav{display:flex;flex-direction:column;gap:5px;flex:1}.admin-nav-btn{border:0;background:transparent;color:rgba(255,255,255,.78);text-align:left;padding:10px;border-radius:8px;font-size:12px;font-weight:800}.admin-nav-btn.active,.admin-nav-btn:hover{background:rgba(230,181,0,.18);color:#fff}.admin-sidebar-foot{font-size:10px;color:rgba(255,255,255,.45);line-height:1.5}.admin-email-input{width:100%;padding:7px;border:1px solid var(--border);border-radius:7px}.admin-inline-actions{display:flex;gap:5px}.admin-only{display:none}body.role-admin .admin-only{display:flex}.teacher-only{display:none}body.role-teacher .teacher-only{display:block}
+@media(max-width:1050px){.main-layout{grid-template-columns:1fr;grid-template-areas:"stats" "toolbar" "grid" "scan"}.sidebar-scan{position:static}.stats-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.login-box{display:block;max-width:450px}.login-intro{padding:25px}.login-form-content{padding:28px}.app-header{height:auto;min-height:64px;flex-wrap:wrap;padding:8px 10px}.header-clock{display:none}.header-school{font-size:13px}.header-sub{font-size:8px}.stats-row{grid-template-columns:repeat(2,1fr)}.toolbar{align-items:stretch}.search-wrap{min-width:100%}.toolbar-actions{width:100%}.toolbar-actions .btn{flex:1}.grid-area{grid-template-columns:1fr}.profile-grid{grid-template-columns:repeat(2,1fr)}.profile-details{grid-template-columns:1fr}body.role-admin #app{flex-direction:column}body.role-admin #admin-sidebar{width:100%;flex-direction:row;flex-wrap:wrap;align-items:center}.admin-nav{flex-direction:row;flex-wrap:wrap}.admin-nav-btn{width:auto}.profile-hero{align-items:flex-start}}
+
+.live-ops-panel{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}.ops-header{padding:11px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.ops-live-dot{font-size:8px;color:var(--green)}.ops-section-title{display:flex;justify-content:space-between;padding:9px 13px 5px;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:800}.ops-list{max-height:130px;overflow:auto}.ops-item{display:flex;align-items:center;gap:8px;padding:7px 13px;border-bottom:1px solid #eee7e0;font-size:10px}.ops-item:last-child{border-bottom:0}.ops-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}.ops-dot.online{background:var(--green)}.ops-dot.offline{background:var(--red)}.ops-dot.busy{background:var(--amber)}.ops-main{flex:1;min-width:0}.ops-main strong{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ops-main span{display:block;font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ops-status{font-size:8px;font-weight:800;text-transform:uppercase}.ops-empty{padding:12px 13px;color:var(--muted);font-size:9px}.scan-live-chip{margin-left:auto;font-size:8px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen">
+  <form id="login-form" class="login-box">
+    <div class="login-intro">
+      <img src="global-academy-logo.jpg" class="login-logo" alt="Global Academy Logo" onerror="this.style.display='none';document.getElementById('login-fallback').style.display='flex';">
+      <div id="login-fallback" class="login-fallback" style="display:none">GA</div>
+      <div class="login-intro-copy">Global Academy Smart RFID Attendance.</div>
+      <div class="login-intro-note">One login for administration, teachers, and linked student accounts.</div>
+    </div>
+    <div class="login-form-content">
+      <div class="login-title">Welcome back</div>
+      <div class="login-subtitle">Sign in to continue</div>
+      <div class="login-field"><label class="login-label">Email</label><input id="login-email" class="login-input" type="email" required autocomplete="username" placeholder="you@example.com"></div>
+      <div class="login-field"><label class="login-label">Password</label><input id="login-password" class="login-input" type="password" required autocomplete="current-password" placeholder="Enter password"></div>
+      <button id="login-btn" class="login-btn" type="submit">Sign in</button>
+      <div id="login-error" class="login-error"></div><div id="login-loading" class="login-loading">Signing in...</div>
+    </div>
+  </form>
+</div>
+
+<div id="app">
+  <aside id="admin-sidebar">
+    <div class="admin-brand"><div class="admin-brand-mark">GA</div><div><div class="admin-brand-name">Admin Console</div><div class="admin-brand-role">School administration</div></div></div>
+    <nav class="admin-nav">
+      <button type="button" class="admin-nav-btn active" data-view="attendance">Attendance</button>
+      <button type="button" class="admin-nav-btn" data-view="students">Student Accounts</button>
+      <button type="button" class="admin-nav-btn" data-view="audit">Audit Log</button>
+    </nav>
+    <div class="admin-sidebar-foot">Manage students, attendance, accounts, and audit logs. Teachers use the live-scan layout.</div>
+  </aside>
+  <div class="app-body">
+    <header class="app-header">
+      <div class="header-logo-wrap"><img src="global-academy-logo.jpg" alt="Global Academy" onerror="this.style.display='none'"></div>
+      <div class="header-titles"><div class="header-school">Global Academy of Technology and Entrepreneurship, Inc.</div><div class="header-sub">Smart RFID Attendance System</div></div>
+      <div class="header-clock"><div id="clock-time" class="clock-time">--:--:--</div><div id="clock-date" class="clock-date">Loading...</div></div>
+      <div id="conn-status" class="header-status"><span id="conn-dot" class="status-dot"></span><span id="conn-text">Connecting</span></div>
+      <div id="queue-badge" class="header-queue-badge"><span>↻</span><span id="queue-count-text">0 queued</span></div>
+      <button id="notif-btn" class="notif-btn" type="button">🔔 Notify: Off</button>
+      <span id="current-role-badge" class="role-pill">ADMIN</span>
+      <button id="logout-btn" class="logout-btn" type="button">Logout</button>
+    </header>
+
+    <nav class="view-tabs">
+      <button class="view-tab active" data-view="attendance">Attendance</button>
+      <button class="view-tab" data-view="students">Students</button>
+      <button class="view-tab" data-view="audit">Audit Log</button><button class="view-tab teacher-only" data-view="grades">Manage Grades</button>
+    </nav>
+
+    <div id="view-attendance" class="view-panel active">
+      <main class="main-layout">
+        <section class="stats-row">
+          <div class="stat-card"><div class="stat-label">Total Students</div><div id="stat-total" class="stat-value">0</div></div>
+          <div class="stat-card present"><div class="stat-label">Present</div><div id="stat-present" class="stat-value">0</div></div>
+          <div class="stat-card late"><div class="stat-label">Late</div><div id="stat-late" class="stat-value">0</div></div>
+          <div class="stat-card absent"><div class="stat-label">Absent</div><div id="stat-absent" class="stat-value">0</div></div>
+          <div class="stat-card rate"><div class="stat-label">Attendance Rate</div><div id="stat-rate" class="stat-value">0%</div></div>
+          <div id="risk-stat-card" class="stat-card risk"><div class="stat-label">At Risk</div><div id="stat-risk" class="stat-value">0</div><div class="risk-summary">3+ consecutive absences</div></div>
+        </section>
+
+        <div class="toolbar">
+          <div class="search-wrap"><span class="search-icon">🔍</span><input id="search-input" class="search-input" type="search" placeholder="Search by name, ID, section, or RFID..."></div>
+          <div class="filter-chips"><button class="chip active" data-filter="all">All</button><button class="chip present" data-filter="present">Present</button><button class="chip late" data-filter="late">Late</button><button class="chip absent" data-filter="absent">Absent</button><button class="chip risk" data-filter="risk">At Risk</button></div>
+          <div id="showing-count" style="font-size:11px;color:var(--muted)">Showing 0</div>
+          <div class="toolbar-actions"><button id="refresh-btn" class="btn btn-ghost" type="button">↻ Refresh</button><button id="add-student-btn" class="btn btn-primary" type="button">＋ Add Student</button></div>
+        </div>
+
+        <section id="student-grid" class="grid-area"></section>
+
+        <aside class="sidebar-scan">
+          <div id="scan-hero" class="scan-hero"><div class="scan-label">● Latest RFID Scan</div><div id="scan-content"><div class="scan-idle"><div style="font-size:34px;opacity:.5">💳</div><div class="scan-idle-text">Ready for the next card</div></div></div></div>
+          <div class="scan-history-panel"><div class="history-header">Recent Scans</div><div id="history-list" class="history-list"><div class="history-empty">No scans this session</div></div></div>
+          <div class="live-ops-panel">
+            <div class="ops-header"><span>Live Operations</span><span id="ops-live-label" class="ops-live-dot">LIVE</span></div>
+            <div class="ops-section-title">Connected Teachers <span id="teacher-online-count">0</span></div>
+            <div id="teacher-presence-list" class="ops-list"><div class="ops-empty">No teachers connected yet.</div></div>
+            <div class="ops-section-title">RFID Readers <span id="reader-online-count">0</span></div>
+            <div id="reader-health-list" class="ops-list"><div class="ops-empty">No reader heartbeat data.</div></div>
+            <div class="ops-section-title">Live Scan Queue <span id="live-scan-count">0</span></div>
+            <div id="live-scan-list" class="ops-list"><div class="ops-empty">Waiting for scans...</div></div>
+          </div>
+          <div class="print-panel"><div class="print-panel-title">Print / Export Report</div><div class="print-row"><input id="print-date" class="date-input" type="date"><button id="print-btn" class="btn btn-gold" type="button">🖨 PDF</button><button id="excel-btn" class="btn btn-gold" type="button">📊 Excel</button></div></div>
+        </aside>
+      </main>
+    </div>
+
+    <div id="view-students" class="view-panel">
+      <div class="panel-card">
+        <h2>Student Accounts</h2>
+        <p style="font-size:11px;color:var(--muted);margin-bottom:13px">Student portal accounts are linked to the students.auth_user_id field.</p>
+        <div class="print-row" style="padding:0 0 12px"><button id="add-student-btn-admin" class="btn btn-primary" type="button">＋ Add Student</button></div>
+        <table class="admin-table"><thead><tr><th>Student ID</th><th>Name</th><th>Section</th><th>RFID</th><th>Portal</th><th>Action</th></tr></thead><tbody id="students-accounts-body"><tr><td colspan="6">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <div id="view-grades" class="view-panel">
+      <div class="panel-card">
+        <div class="grade-toolbar">
+          <div>
+            <h2>Manage Student Grades</h2>
+            <p style="font-size:11px;color:var(--muted);margin-top:4px">Teachers can add, edit, and delete grades. Changes are saved directly to the grades table.</p>
+          </div>
+          <button id="grade-clear-btn" class="btn btn-ghost" type="button">Clear Form</button>
+        </div>
+
+        <div class="grade-form-grid">
+          <div class="form-field">
+            <label class="form-label">Student *</label>
+            <select id="grade-student" class="grade-select"></select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Subject *</label>
+            <input id="grade-subject" class="form-input" type="text" placeholder="e.g. Web Development">
+          </div>
+          <div class="form-field">
+            <label class="form-label">School Year</label>
+            <input id="grade-school-year" class="form-input" type="text" placeholder="2026-2027">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Semester</label>
+            <select id="grade-semester" class="grade-select">
+              <option value="1st Semester">1st Semester</option>
+              <option value="2nd Semester">2nd Semester</option>
+              <option value="Summer">Summer</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Prelim</label>
+            <input id="grade-prelim" class="form-input grade-input" type="number" min="0" max="100" step="0.01" placeholder="--">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Midterm</label>
+            <input id="grade-midterm" class="form-input grade-input" type="number" min="0" max="100" step="0.01" placeholder="--">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Prefinal</label>
+            <input id="grade-prefinal" class="form-input grade-input" type="number" min="0" max="100" step="0.01" placeholder="--">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Final</label>
+            <input id="grade-final" class="form-input grade-input" type="number" min="0" max="100" step="0.01" placeholder="--">
+          </div>
+          <div class="form-field">
+            <label class="form-label">Final Grade</label>
+            <input id="grade-final-grade" class="form-input grade-input" type="number" min="0" max="100" step="0.01" placeholder="--">
+          </div>
+          <div class="form-field" style="grid-column:span 2">
+            <label class="form-label">Remarks</label>
+            <input id="grade-remarks" class="form-input" type="text" placeholder="e.g. Passed, Excellent, Needs Improvement">
+          </div>
+        </div>
+
+        <div class="grade-actions">
+          <button id="calculate-grade-btn" class="btn btn-gold" type="button">Calculate Final Grade</button>
+          <button id="save-grade-btn" class="btn btn-primary" type="button">Save Grade</button>
+          <span id="grade-edit-status" class="grade-status"></span>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="grade-toolbar">
+          <div>
+            <h2>Recorded Grades</h2>
+            <p style="font-size:11px;color:var(--muted);margin-top:4px">All grades currently stored in the grades table.</p>
+          </div>
+          <button id="grade-refresh-btn" class="btn btn-ghost" type="button">↻ Refresh</button>
+        </div>
+        <div class="grade-table-wrap">
+          <table class="grade-table">
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Student</th>
+                <th>Subject</th>
+                <th>School Year</th>
+                <th>Semester</th>
+                <th>Prelim</th>
+                <th>Midterm</th>
+                <th>Prefinal</th>
+                <th>Final</th>
+                <th>Final Grade</th>
+                <th>Remarks</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="teacher-grades-body"><tr><td colspan="12" class="grade-empty">Open Manage Grades to load records.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-audit" class="view-panel">
+      <div class="panel-card">
+        <h2>Audit Log</h2>
+        <div class="print-row" style="padding:0 0 12px"><button id="audit-refresh-btn" class="btn btn-ghost" type="button">↻ Refresh</button></div>
+        <table class="audit-list"><thead><tr><th>When</th><th>User</th><th>Action</th><th>Target</th><th>Description</th></tr></thead><tbody id="audit-body"><tr><td colspan="5">Loading...</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="student-portal" class="student-portal">
+  <header class="student-portal-header"><div class="student-portal-brand"><img src="global-academy-logo.jpg" alt="Global Academy" onerror="this.style.display='none'"><div><div class="student-portal-title">Student Portal</div><div class="student-portal-subtitle">Global Academy Smart RFID Attendance</div></div></div><button id="student-logout-btn" class="logout-btn" type="button">Logout</button></header>
+  <main class="student-portal-main">
+    <section class="profile-hero"><div id="student-profile-avatar" class="profile-avatar">ST</div><div><div id="student-profile-name" class="profile-name">Student</div><div id="student-profile-meta" class="profile-meta">Student profile</div><span class="role-pill">STUDENT ACCOUNT</span></div></section>
+    <section class="profile-grid"><div class="profile-stat"><div class="profile-stat-label">Days Present</div><div id="student-present-count" class="profile-stat-value">0</div></div><div class="profile-stat"><div class="profile-stat-label">Timed Out</div><div id="student-timeout-count" class="profile-stat-value">0</div></div><div class="profile-stat"><div class="profile-stat-label">Attendance Records</div><div id="student-record-count" class="profile-stat-value">0</div></div><div class="profile-stat"><div class="profile-stat-label">RFID</div><div id="student-rfid-short" class="profile-stat-value">--</div></div></section>
+    <section class="profile-panel"><h2>My Profile</h2><div class="profile-details"><div class="profile-detail"><div class="profile-detail-label">Student ID</div><div id="student-detail-id" class="profile-detail-value">--</div></div><div class="profile-detail"><div class="profile-detail-label">Full Name</div><div id="student-detail-name" class="profile-detail-value">--</div></div><div class="profile-detail"><div class="profile-detail-label">Course / Section</div><div id="student-detail-section" class="profile-detail-value">--</div></div><div class="profile-detail"><div class="profile-detail-label">RFID UID</div><div id="student-detail-rfid" class="profile-detail-value">--</div></div></div><h2>My Attendance</h2><div style="overflow:auto"><table class="student-attendance-table"><thead><tr><th>Date</th><th>Status</th><th>Time In</th><th>Time Out</th></tr></thead><tbody id="student-attendance-body"><tr><td colspan="4">Loading attendance...</td></tr></tbody></table></div></section>
+    <section class="profile-panel"><h2>My Grades</h2><div style="overflow:auto"><table class="student-attendance-table"><thead><tr><th>Subject</th><th>Prelim</th><th>Midterm</th><th>Prefinal</th><th>Final</th><th>Final Grade</th><th>Remarks</th></tr></thead><tbody id="student-grades-body"><tr><td colspan="7">Loading grades...</td></tr></tbody></table></div></section>
+  </main>
+</div>
+
+<div id="modal-overlay" class="modal-overlay"><div class="modal"><div class="modal-header"><div class="modal-title">Add New Student</div><button id="modal-close-btn" class="modal-close" type="button">×</button></div><div class="modal-body">
+  <div class="form-field"><label class="form-label">Student ID Number *</label><input id="inp-sid" class="form-input" type="text" placeholder="25-26-001"></div>
+  <div class="form-field"><label class="form-label">Full Name *</label><input id="inp-name" class="form-input" type="text" placeholder="Last, First Middle"></div>
+  <div class="form-field"><label class="form-label">RFID UID *</label><div class="rfid-row"><input id="inp-uid" class="form-input" type="text" placeholder="A1B2C3D4"><button id="scan-uid-btn" class="btn btn-ghost" type="button">💳 Scan ID</button></div><div id="scan-status" class="scan-status-text"></div></div>
+  <div class="form-field"><label class="form-label">Course / Section</label><input id="inp-section" class="form-input" type="text" placeholder="BSIT-2"></div>
+  <div class="form-field admin-only"><label class="form-label">Student Email</label><input id="inp-email" class="form-input" type="email" placeholder="student@example.com"><div class="form-hint">Admin only. Used to create the Supabase student login.</div></div>
+  <div class="form-field admin-only"><label class="form-label">Temporary Password</label><input id="inp-password" class="form-input" type="text" placeholder="At least 6 characters"><div class="form-hint">Enter both email and password to create a linked student portal account.</div></div>
+</div><div class="modal-footer"><button id="modal-cancel-btn" class="btn btn-ghost" type="button">Cancel</button><button id="modal-save-btn" class="btn btn-primary" type="button">Save Student</button></div></div></div>
+
+<div id="manual-modal-overlay" class="modal-overlay"><div class="modal"><div class="modal-header"><div class="modal-title">Mark Attendance</div><button id="manual-modal-close-btn" class="modal-close" type="button">×</button></div><div class="modal-body"><div class="form-field"><label class="form-label">Student</label><div id="manual-student-name" class="form-input" style="background:#f4f0eb">--</div></div><div class="form-field"><label class="form-label">Status</label><select id="manual-status" class="form-input"><option value="Present">Present</option><option value="Late">Late</option><option value="Time Out">Time Out</option><option value="Absent">Absent</option></select></div><div class="form-field"><label class="form-label">Note</label><input id="manual-note" class="form-input" type="text" placeholder="Optional note"></div></div><div class="modal-footer"><button id="manual-cancel-btn" class="btn btn-ghost" type="button">Cancel</button><button id="manual-save-btn" class="btn btn-primary" type="button">Save</button></div></div></div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script>
+(function(){
+'use strict';
+
+const SUPABASE_URL='https://tlmlyymsxihzbmksinfn.supabase.co';
+const SUPABASE_KEY='sb_publishable_FWKNh4QI-Iw8sT-IzBcxcg_8epcmbmv';
+const TIMEZONE='Asia/Manila';
+const MAX_HISTORY=5;
+const QUEUE_KEY='ga_offline_attendance_queue';
+const AT_RISK_THRESHOLD=3;
+const RISK_LOOKBACK_DAYS=60;
+
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const sbAuth=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+
+let initialized=false;
+let clockInterval=null;
+
+const state={
+  students:[],
+  attendance:{},
+  scanHistory:[],
+  filter:'all',
+  searchQ:'',
+  attendanceDate:null,
+  mainChannel:null,
+  scanChannel:null,
+  presenceChannel:null,
+  readerChannel:null,
+  scanEventChannel:null,
+  readerTimer:null,
+  teacherPresence:new Map(),
+  readerHealth:new Map(),
+  scanTimer:null,
+  userRole:'',
+  userId:'',
+  currentUser:null,
+  currentStudent:null,
+  manualTargetStudent:null,
+  notifOn:false,
+  riskStudents:{},
+  riskNotified:new Set(),
+  editingGradeId:null
+};
+
+const el={
+  loginScreen:document.getElementById('login-screen'),
+  app:document.getElementById('app'),
+  loginForm:document.getElementById('login-form'),
+  loginEmail:document.getElementById('login-email'),
+  loginPassword:document.getElementById('login-password'),
+  loginBtn:document.getElementById('login-btn'),
+  loginError:document.getElementById('login-error'),
+  loginLoading:document.getElementById('login-loading'),
+  studentPortal:document.getElementById('student-portal'),
+  studentLogoutBtn:document.getElementById('student-logout-btn'),
+  studentProfileAvatar:document.getElementById('student-profile-avatar'),
+  studentProfileName:document.getElementById('student-profile-name'),
+  studentProfileMeta:document.getElementById('student-profile-meta'),
+  studentPresentCount:document.getElementById('student-present-count'),
+  studentTimeoutCount:document.getElementById('student-timeout-count'),
+  studentRecordCount:document.getElementById('student-record-count'),
+  studentRfidShort:document.getElementById('student-rfid-short'),
+  studentDetailId:document.getElementById('student-detail-id'),
+  studentDetailName:document.getElementById('student-detail-name'),
+  studentDetailSection:document.getElementById('student-detail-section'),
+  studentDetailRfid:document.getElementById('student-detail-rfid'),
+  studentAttendanceBody:document.getElementById('student-attendance-body'),
+  studentGradesBody:document.getElementById('student-grades-body'),
+  gradeStudent:document.getElementById('grade-student'),
+  gradeSubject:document.getElementById('grade-subject'),
+  gradeSchoolYear:document.getElementById('grade-school-year'),
+  gradeSemester:document.getElementById('grade-semester'),
+  gradePrelim:document.getElementById('grade-prelim'),
+  gradeMidterm:document.getElementById('grade-midterm'),
+  gradePrefinal:document.getElementById('grade-prefinal'),
+  gradeFinal:document.getElementById('grade-final'),
+  gradeFinalGrade:document.getElementById('grade-final-grade'),
+  gradeRemarks:document.getElementById('grade-remarks'),
+  calculateGradeBtn:document.getElementById('calculate-grade-btn'),
+  saveGradeBtn:document.getElementById('save-grade-btn'),
+  gradeClearBtn:document.getElementById('grade-clear-btn'),
+  gradeEditStatus:document.getElementById('grade-edit-status'),
+  gradeRefreshBtn:document.getElementById('grade-refresh-btn'),
+  teacherGradesBody:document.getElementById('teacher-grades-body'),
+  logoutBtn:document.getElementById('logout-btn'),
+  currentRoleBadge:document.getElementById('current-role-badge'),
+  notifBtn:document.getElementById('notif-btn'),
+  queueBadge:document.getElementById('queue-badge'),
+  queueCountText:document.getElementById('queue-count-text'),
+  clockTime:document.getElementById('clock-time'),
+  clockDate:document.getElementById('clock-date'),
+  connDot:document.getElementById('conn-dot'),
+  connText:document.getElementById('conn-text'),
+  statTotal:document.getElementById('stat-total'),
+  statPresent:document.getElementById('stat-present'),
+  statLate:document.getElementById('stat-late'),
+  statAbsent:document.getElementById('stat-absent'),
+  statRate:document.getElementById('stat-rate'),
+  statRisk:document.getElementById('stat-risk'),
+  riskStatCard:document.getElementById('risk-stat-card'),
+  studentGrid:document.getElementById('student-grid'),
+  showingCount:document.getElementById('showing-count'),
+  searchInput:document.getElementById('search-input'),
+  refreshBtn:document.getElementById('refresh-btn'),
+  addStudentBtn:document.getElementById('add-student-btn'),
+  scanContent:document.getElementById('scan-content'),
+  historyList:document.getElementById('history-list'),
+  printDate:document.getElementById('print-date'),
+  printBtn:document.getElementById('print-btn'),
+  excelBtn:document.getElementById('excel-btn'),
+  modalOverlay:document.getElementById('modal-overlay'),
+  modalCloseBtn:document.getElementById('modal-close-btn'),
+  modalCancelBtn:document.getElementById('modal-cancel-btn'),
+  modalSaveBtn:document.getElementById('modal-save-btn'),
+  inpSid:document.getElementById('inp-sid'),
+  inpName:document.getElementById('inp-name'),
+  inpUid:document.getElementById('inp-uid'),
+  inpSection:document.getElementById('inp-section'),
+  inpEmail:document.getElementById('inp-email'),
+  inpPassword:document.getElementById('inp-password'),
+  studentsAccountsBody:document.getElementById('students-accounts-body'),
+  addStudentBtnAdmin:document.getElementById('add-student-btn-admin'),
+  scanUidBtn:document.getElementById('scan-uid-btn'),
+  scanStatus:document.getElementById('scan-status'),
+  manualModalOverlay:document.getElementById('manual-modal-overlay'),
+  manualModalCloseBtn:document.getElementById('manual-modal-close-btn'),
+  manualCancelBtn:document.getElementById('manual-cancel-btn'),
+  manualSaveBtn:document.getElementById('manual-save-btn'),
+  manualStudentName:document.getElementById('manual-student-name'),
+  manualStatus:document.getElementById('manual-status'),
+  manualNote:document.getElementById('manual-note'),
+  auditBody:document.getElementById('audit-body'),
+  auditRefreshBtn:document.getElementById('audit-refresh-btn'),
+  toastContainer:document.getElementById('toast-container'),
+  teacherOnlineCount:document.getElementById('teacher-online-count'),
+  teacherPresenceList:document.getElementById('teacher-presence-list'),
+  readerOnlineCount:document.getElementById('reader-online-count'),
+  readerHealthList:document.getElementById('reader-health-list'),
+  liveScanCount:document.getElementById('live-scan-count'),
+  liveScanList:document.getElementById('live-scan-list'),
+  opsLiveLabel:document.getElementById('ops-live-label')
+};
+
+function esc(value){
+  const div=document.createElement('div');
+  div.textContent=value==null?'':String(value);
+  return div.innerHTML;
+}
+function normalizeUid(value){return String(value||'').replace(/[^0-9a-fA-F]/g,'').toUpperCase();}
+function initials(name){
+  if(!name)return '?';
+  const p=String(name).trim().split(/\s+/);
+  return p.length===1?p[0][0].toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+function manilaDate(date=new Date()){
+  return date.toLocaleDateString('en-CA',{timeZone:TIMEZONE});
+}
+function formatTime(timestamp){
+  if(!timestamp)return '--';
+  const d=new Date(timestamp);
+  if(Number.isNaN(d.getTime()))return '--';
+  return d.toLocaleTimeString('en-US',{timeZone:TIMEZONE,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+}
+function formatDateTime(timestamp){
+  if(!timestamp)return '--';
+  const d=new Date(timestamp);
+  if(Number.isNaN(d.getTime()))return '--';
+  return d.toLocaleString('en-US',{timeZone:TIMEZONE,month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+}
+function formatDate(date){
+  const d=date instanceof Date?date:new Date(date);
+  if(Number.isNaN(d.getTime()))return '--';
+  return d.toLocaleDateString('en-US',{timeZone:TIMEZONE,weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+function formatStudentDate(dateValue){
+  if(!dateValue)return '--';
+  const [y,m,d]=String(dateValue).split('-').map(Number);
+  if(!y||!m||!d)return String(dateValue);
+  return new Date(y,m-1,d,12).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+}
+function getManilaDateFromTimestamp(timestamp){
+  if(!timestamp)return '';
+  const d=new Date(timestamp);
+  if(Number.isNaN(d.getTime()))return '';
+  return d.toLocaleDateString('en-CA',{timeZone:TIMEZONE});
+}
+function toast(message,type='info'){
+  const item=document.createElement('div');
+  item.className='toast '+type;
+  item.textContent=message;
+  el.toastContainer.appendChild(item);
+  setTimeout(()=>item.remove(),3500);
+}
+function normalizeStatus(value){
+  const s=String(value||'').toLowerCase().trim();
+  if(s==='present')return 'Present';
+  if(s==='late')return 'Late';
+  if(['time out','timeout','timed out','out'].includes(s))return 'Time Out';
+  if(s==='absent')return 'Absent';
+  return String(value||'').trim()||'Recorded';
+}
+
+function readQueue(){try{const raw=localStorage.getItem(QUEUE_KEY);return raw?JSON.parse(raw):[];}catch(e){return [];}}
+function writeQueue(queue){try{localStorage.setItem(QUEUE_KEY,JSON.stringify(queue));}catch(e){}renderQueueBadge();}
+function queueAction(action){
+  const queue=readQueue();
+  queue.push({...action,queuedAt:new Date().toISOString(),localId:'q_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)});
+  writeQueue(queue);
+}
+function renderQueueBadge(){
+  const n=readQueue().length;
+  el.queueBadge.classList.toggle('show',n>0);
+  el.queueCountText.textContent=`${n} queued`;
+}
+async function insertAttendance(student,status,clientTs,note,readerId='WEB-MANUAL'){
+  const {data,error}=await sb.rpc('manual_mark_attendance',{
+    p_student_id:student.id,
+    p_status:status,
+    p_client_ts:clientTs||new Date().toISOString(),
+    p_note:note||null,
+    p_reader_id:readerId
+  });
+  if(error)throw error;
+  const result=Array.isArray(data)?data[0]:data;
+  if(result?.result_status==='duplicate')throw new Error('Duplicate attendance request ignored.');
+  return result;
+}
+async function flushQueue(){
+  const queue=readQueue();
+  if(!queue.length||!navigator.onLine)return;
+  const remaining=[];
+  let synced=0;
+  for(const item of queue){
+    try{
+      if(item.type==='manual_attendance'){
+        const {data:student,error:studentError}=await sb.from('students').select('*').eq('id',item.studentId).maybeSingle();
+        if(studentError)throw studentError;
+        if(!student)throw new Error('Student no longer exists.');
+        await insertAttendance(student,item.status,item.clientTs,item.note||null);
+        synced++;
+      }
+    }catch(error){remaining.push(item);}
+  }
+  writeQueue(remaining);
+  if(synced){toast(`Synced ${synced} queued attendance action(s).`,'success');if(state.attendanceDate)await loadAttendance(state.attendanceDate);}
+}
+window.addEventListener('online',()=>{toast('Back online. Syncing queued actions...','info');flushQueue();});
+el.queueBadge.addEventListener('click',()=>{if(navigator.onLine)flushQueue();else toast('Still offline. The queue will sync when you reconnect.','info');});
+
+function updateNotifBtn(){
+  if(!('Notification' in window)){el.notifBtn.style.display='none';return;}
+  state.notifOn=Notification.permission==='granted';
+  el.notifBtn.textContent=state.notifOn?'🔔 Notify: On':'🔔 Notify: Off';
+  el.notifBtn.classList.toggle('on',state.notifOn);
+}
+async function toggleNotifications(){
+  if(!('Notification' in window)){toast('Browser notifications are not supported here.','error');return;}
+  if(Notification.permission==='granted'){toast('Notifications are already enabled.','info');return;}
+  const p=await Notification.requestPermission();
+  if(p==='granted')toast('Notifications enabled.','success');else toast('Notification permission was not granted.','error');
+  updateNotifBtn();
+}
+function notifyScan(scan){
+  if(!state.notifOn||document.visibilityState==='visible')return;
+  try{new Notification(scan.type==='unknown'?'Unregistered card':`${scan.name} ${scan.type==='timeout'?'Time Out':scan.type==='late'?'Late':'Time In'}`,{body:scan.type==='unknown'?`UID ${scan.uid}`:`${scan.studentId} • ${scan.timeLabel}`,tag:'ga-rfid-scan'});}catch(e){}
+}
+
+function showLoginError(message){el.loginError.textContent=message;el.loginError.classList.add('show');}
+function clearLoginError(){el.loginError.textContent='';el.loginError.classList.remove('show');}
+function setLoginLoading(loading){el.loginBtn.disabled=loading;el.loginLoading.style.display=loading?'block':'none';el.loginBtn.textContent=loading?'Signing in...':'Sign in';}
+
+async function getAccountProfile(user){
+  const metaRole=String(user?.user_metadata?.role||'').toLowerCase().trim();
+  const {data:teacher,error:teacherError}=await sb.from('teacher_profiles').select('id,full_name,email,role').eq('id',user.id).maybeSingle();
+  if(teacherError)console.warn('Teacher profile lookup:',teacherError.message);
+  if(teacher){return {role:String(teacher.role||'teacher').toLowerCase(),profile:teacher};}
+  const {data:student,error:studentError}=await sb.from('students').select('id,student_id_number,full_name,rfid_uid,course_section,created_at,auth_user_id').eq('auth_user_id',user.id).maybeSingle();
+  if(studentError)console.warn('Student link lookup:',studentError.message);
+  if(student){return {role:'student',profile:student};}
+  if(['admin','teacher','student'].includes(metaRole))return {role:metaRole,profile:null};
+  return {role:'',profile:null};
+}
+
+async function login(event){
+  if(event)event.preventDefault();
+  const email=el.loginEmail.value.trim();
+  const password=el.loginPassword.value;
+  clearLoginError();
+  if(!email||!password){showLoginError('Please enter your email and password.');return;}
+  setLoginLoading(true);
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    if(!data.session)throw new Error('Login session was not created.');
+    await routeUser(data.session);
+  }catch(error){console.error(error);showLoginError(error.message||'Unable to sign in.');}
+  finally{setLoginLoading(false);}
+}
+
+async function routeUser(session){
+  if(!session?.user)return;
+  try{
+    const account=await getAccountProfile(session.user);
+    if(!['admin','teacher','student'].includes(account.role)){
+      await sb.auth.signOut();
+      showLogin();
+      showLoginError('This account is not linked to an admin, teacher, or student profile.');
+      return;
+    }
+    state.userRole=account.role;
+    state.userId=session.user.id;
+    state.currentUser=session.user;
+    state.currentProfile=account.profile;
+    if(account.role==='student'){
+      await showStudentPortal(session,account.profile);
+      return;
+    }
+    showApp();
+  }catch(error){
+    console.error('Account routing error:',error);
+    await sb.auth.signOut();
+    showLogin();
+    showLoginError(error.message||'Unable to load your account profile.');
+  }
+}
+
+async function showStudentPortal(session,linkedStudent){
+  el.loginScreen.style.display='none';
+  el.app.style.display='none';
+  el.studentPortal.style.display='block';
+  let student=linkedStudent||null;
+  if(!student){
+    const meta=session.user.user_metadata||{};
+    if(meta.student_id_number){
+      const q=await sb.from('students').select('*').eq('student_id_number',meta.student_id_number).maybeSingle();
+      if(q.error)throw q.error;student=q.data;
+    }
+    if(!student&&meta.student_uuid){
+      const q=await sb.from('students').select('*').eq('id',meta.student_uuid).maybeSingle();
+      if(q.error)throw q.error;student=q.data;
+    }
+  }
+  if(!student)throw new Error('No student account is linked to this login. Ask an administrator to create or link the student account.');
+  state.currentStudent=student;
+  el.studentProfileAvatar.textContent=initials(student.full_name);
+  el.studentProfileName.textContent=student.full_name||'Student';
+  el.studentProfileMeta.textContent=`${student.student_id_number||'--'} • ${student.course_section||'No course / section'}`;
+  el.studentDetailId.textContent=student.student_id_number||'--';
+  el.studentDetailName.textContent=student.full_name||'--';
+  el.studentDetailSection.textContent=student.course_section||'--';
+  el.studentDetailRfid.textContent=student.rfid_uid||'--';
+  el.studentRfidShort.textContent=student.rfid_uid?normalizeUid(student.rfid_uid).slice(-4):'--';
+  await loadStudentAttendance(student);
+  await loadStudentGrades(student);
+}
+
+async function loadStudentAttendance(student){
+  el.studentAttendanceBody.innerHTML='<tr><td colspan="4">Loading attendance...</td></tr>';
+  const {data,error}=await sb.from('attendance_records').select('*').eq('student_id',student.id).order('timestamp',{ascending:false});
+  if(error)throw error;
+  const grouped={};
+  (data||[]).forEach(row=>{
+    const date=getManilaDateFromTimestamp(row.timestamp);if(!date)return;
+    if(!grouped[date])grouped[date]={timeIn:null,timeOut:null,status:'Present'};
+    const status=normalizeStatus(row.status);
+    if((status==='Present'||status==='Late')&&!grouped[date].timeIn){grouped[date].timeIn=row.timestamp;grouped[date].status=status;}
+    if(status==='Time Out'&&!grouped[date].timeOut)grouped[date].timeOut=row.timestamp;
+    if(status==='Absent'&&!grouped[date].timeIn)grouped[date].status='Absent';
+  });
+  const dates=Object.keys(grouped).sort((a,b)=>b.localeCompare(a));
+  let presentCount=0,timeoutCount=0;
+  el.studentAttendanceBody.innerHTML='';
+  if(!dates.length){el.studentAttendanceBody.innerHTML='<tr><td colspan="4">No attendance records yet.</td></tr>';}
+  dates.forEach(date=>{
+    const item=grouped[date];
+    if(item.timeIn)presentCount++;
+    if(item.timeOut)timeoutCount++;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${esc(formatStudentDate(date))}</td><td>${esc(item.status==='Absent'?'Absent':item.timeOut?'Timed Out':item.status)}</td><td>${item.timeIn?esc(formatTime(item.timeIn)):'--'}</td><td>${item.timeOut?esc(formatTime(item.timeOut)):'--'}</td>`;
+    el.studentAttendanceBody.appendChild(tr);
+  });
+  el.studentPresentCount.textContent=presentCount;
+  el.studentTimeoutCount.textContent=timeoutCount;
+  el.studentRecordCount.textContent=dates.length;
+}
+
+async function loadStudentGrades(student){
+  el.studentGradesBody.innerHTML='<tr><td colspan="7">Loading grades...</td></tr>';
+  const {data,error}=await sb.from('grades').select('subject,prelim,midterm,prefinal,final,final_grade,remarks,school_year,semester,created_at').eq('student_id',student.id).order('created_at',{ascending:false});
+  if(error){console.error(error);el.studentGradesBody.innerHTML=`<tr><td colspan="7">Unable to load grades: ${esc(error.message)}</td></tr>`;return;}
+  if(!data?.length){el.studentGradesBody.innerHTML='<tr><td colspan="7">No grades recorded yet.</td></tr>';return;}
+  el.studentGradesBody.innerHTML=data.map(row=>`<tr><td>${esc(row.subject)}</td><td>${row.prelim!=null?esc(row.prelim):'--'}</td><td>${row.midterm!=null?esc(row.midterm):'--'}</td><td>${row.prefinal!=null?esc(row.prefinal):'--'}</td><td>${row.final!=null?esc(row.final):'--'}</td><td>${row.final_grade!=null?esc(row.final_grade):'--'}</td><td>${esc(row.remarks||'--')}</td></tr>`).join('');
+}
+
+function applyRoleLayout(){
+  const isAdmin=state.userRole==='admin';
+  const isTeacher=state.userRole==='teacher';
+  document.body.classList.toggle('role-admin',isAdmin);
+  document.body.classList.toggle('role-teacher',isTeacher);
+  const sub=document.querySelector('.header-sub');
+  if(sub)sub.textContent=isAdmin?'Administration Console':'Smart RFID Attendance System';
+  document.querySelectorAll('.view-tab[data-view="students"],.view-tab[data-view="audit"]').forEach(t=>{t.style.display=isAdmin?'':'none';});
+  document.querySelectorAll('.view-tab[data-view="grades"]').forEach(t=>{t.style.display=isTeacher?'':'none';});
+}
+function showApp(){
+  el.loginScreen.style.display='none';el.studentPortal.style.display='none';applyRoleLayout();el.app.style.display=state.userRole==='admin'?'flex':'block';
+  el.currentRoleBadge.textContent=String(state.userRole).toUpperCase();
+  el.addStudentBtn.style.display=(state.userRole==='admin'||state.userRole==='teacher')?'':'none';
+  updateNotifBtn();renderQueueBadge();initializeApp();
+}
+function showLogin(){
+  document.body.classList.remove('role-admin','role-teacher');
+  el.app.style.display='none';el.studentPortal.style.display='none';el.loginScreen.style.display='flex';el.loginPassword.value='';
+  if(clockInterval){clearInterval(clockInterval);clockInterval=null;}
+  if(state.readerTimer){clearInterval(state.readerTimer);state.readerTimer=null;}
+  if(state.mainChannel){state.mainChannel.unsubscribe();state.mainChannel=null;}
+  if(state.scanChannel){state.scanChannel.unsubscribe();state.scanChannel=null;}
+  if(state.presenceChannel){state.presenceChannel.unsubscribe();state.presenceChannel=null;}
+  if(state.scanEventChannel){state.scanEventChannel.unsubscribe();state.scanEventChannel=null;}
+  if(state.readerChannel){state.readerChannel.unsubscribe();state.readerChannel=null;}
+}
+async function logout(){
+  try{await stopRFIDScan();}catch(e){}
+  if(state.mainChannel){try{await state.mainChannel.unsubscribe();}catch(e){}state.mainChannel=null;}
+  state.students=[];state.attendance={};state.scanHistory=[];state.currentStudent=null;state.currentUser=null;state.currentProfile=null;state.userRole='';state.userId='';state.riskStudents={};state.riskNotified=new Set();state.attendanceDate=null;state.editingGradeId=null;state.teacherPresence=new Map();state.readerHealth=new Map();
+  await sb.auth.signOut();showLogin();
+}
+async function checkAuth(){
+  try{const {data,error}=await sb.auth.getSession();if(error)throw error;if(data.session)await routeUser(data.session);else showLogin();}
+  catch(error){console.error(error);showLogin();showLoginError(error.message||'Unable to check login session.');}
+}
+function updateClock(){const now=new Date();el.clockTime.textContent=now.toLocaleTimeString('en-US',{timeZone:TIMEZONE,hour12:true});el.clockDate.textContent=formatDate(now);}
+function connectionStatus(status){
+  if(status==='live'){el.connDot.className='status-dot live';el.connText.textContent='LIVE';}
+  else if(status==='error'){el.connDot.className='status-dot error';el.connText.textContent='ERROR';}
+  else{el.connDot.className='status-dot';el.connText.textContent='CONNECTING';}
+}
+function setView(view){
+  if(view==='grades'&&state.userRole!=='teacher'){toast('Only teachers can manage grades.','error');return;}
+  if(view==='students'&&state.userRole!=='admin'){toast('Only an admin can manage student accounts.','error');return;}
+  if(view==='audit'&&state.userRole!=='admin'){toast('Only an admin can view the audit log.','error');return;}
+  document.querySelectorAll('.view-tab').forEach(t=>t.classList.toggle('active',t.dataset.view===view));
+  document.querySelectorAll('.admin-nav-btn').forEach(t=>t.classList.toggle('active',t.dataset.view===view));
+  document.querySelectorAll('.view-panel').forEach(p=>p.classList.toggle('active',p.id==='view-'+view));
+  if(view==='audit'&&state.userRole==='admin')loadAuditLog();
+  if(view==='students'&&state.userRole==='admin')renderStudentAccounts();
+  if(view==='grades'&&state.userRole==='teacher'){renderGradeStudentOptions();loadTeacherGrades();}
+}
+document.querySelectorAll('.view-tab').forEach(t=>t.addEventListener('click',()=>setView(t.dataset.view)));
+document.querySelectorAll('.admin-nav-btn').forEach(t=>t.addEventListener('click',()=>setView(t.dataset.view)));
+
+async function loadAuditLog(){
+  if(!el.auditBody)return;
+  el.auditBody.innerHTML='<tr><td colspan="5">Loading...</td></tr>';
+  const {data,error}=await sb.from('audit_logs').select('id,user_id,action,description,target_id,created_at').order('created_at',{ascending:false}).limit(200);
+  if(error){el.auditBody.innerHTML=`<tr><td colspan="5">Unable to load audit log: ${esc(error.message)}</td></tr>`;return;}
+  if(!data?.length){el.auditBody.innerHTML='<tr><td colspan="5">No audit entries yet.</td></tr>';return;}
+  el.auditBody.innerHTML=data.map(row=>`<tr><td>${esc(formatDateTime(row.created_at))}</td><td>${esc(row.user_id?String(row.user_id).slice(0,8):'--')}</td><td>${esc(row.action)}</td><td>${esc(row.target_id||'--')}</td><td style="max-width:260px;overflow-wrap:break-word;">${esc(row.description||'--')}</td></tr>`).join('');
+}
+if(el.auditRefreshBtn)el.auditRefreshBtn.addEventListener('click',loadAuditLog);
+
+async function loadStudents(){
+  const {data,error}=await sb.from('students').select('id,student_id_number,full_name,rfid_uid,course_section,created_at,auth_user_id').order('student_id_number',{ascending:true});
+  if(error)throw error;state.students=data||[];
+}
+
+function dateShift(dateValue,days){
+  const d=new Date(`${dateValue}T00:00:00+08:00`);d.setDate(d.getDate()+days);return d.toLocaleDateString('en-CA',{timeZone:TIMEZONE});
+}
+function isSchoolDay(dateValue){const day=new Date(`${dateValue}T00:00:00Z`).getUTCDay();return day!==0&&day!==6;}
+function getAttendanceForStudent(student){return state.attendance[String(student.id)]||state.attendance[normalizeUid(student.rfid_uid)]||null;}
+function notifyAtRisk(student,streak){
+  if(!state.notifOn||state.riskNotified.has(String(student.id)))return;
+  state.riskNotified.add(String(student.id));
+  const message=`${student.full_name||'A student'} has ${streak} consecutive completed school-day absences.`;
+  if(document.visibilityState==='visible'){toast(message,'error');return;}
+  try{new Notification('Attendance alert',{body:message,tag:`ga-at-risk-${student.id}`});}catch(e){}
+}
+async function loadAtRiskStudents(){
+  const today=manilaDate();
+  const start=dateShift(today,-RISK_LOOKBACK_DAYS);const tomorrow=dateShift(today,1);
+  const {data,error}=await sb.from('attendance_records').select('student_id,scanned_rfid,timestamp,status').gte('timestamp',`${start}T00:00:00+08:00`).lt('timestamp',`${tomorrow}T00:00:00+08:00`).order('timestamp',{ascending:false});
+  if(error){console.error(error);state.riskStudents={};el.statRisk.textContent='0';return;}
+  const presentDatesByStudent=new Map();
+  (data||[]).forEach(row=>{
+    const status=normalizeStatus(row.status);if(status!=='Present'&&status!=='Late')return;
+    const date=getManilaDateFromTimestamp(row.timestamp);if(!date)return;
+    let key=row.student_id?String(row.student_id):normalizeUid(row.scanned_rfid);if(!key)return;
+    if(!presentDatesByStudent.has(key))presentDatesByStudent.set(key,new Set());presentDatesByStudent.get(key).add(date);
+  });
+  const result={};
+  for(const student of state.students){
+    const keys=[String(student.id),normalizeUid(student.rfid_uid)].filter(Boolean);
+    let cursor=dateShift(today,-1);while(!isSchoolDay(cursor))cursor=dateShift(cursor,-1);
+    let streak=0,lastAbsentDate=null;
+    for(let checked=0;checked<RISK_LOOKBACK_DAYS;checked++){
+      if(!isSchoolDay(cursor)){cursor=dateShift(cursor,-1);continue;}
+      const attended=keys.some(k=>presentDatesByStudent.get(k)?.has(cursor));
+      if(attended)break;
+      streak++;if(!lastAbsentDate)lastAbsentDate=cursor;cursor=dateShift(cursor,-1);if(streak>=AT_RISK_THRESHOLD)break;
+    }
+    if(streak>=AT_RISK_THRESHOLD)result[String(student.id)]={streak,lastAbsentDate,name:student.full_name||'Unnamed Student'};
+  }
+  state.riskStudents=result;el.statRisk.textContent=Object.keys(result).length;Object.keys(result).forEach(id=>{const s=state.students.find(x=>String(x.id)===id);if(s)notifyAtRisk(s,result[id].streak);});
+}
+
+async function loadAttendance(dateValue){
+  const safe=dateValue||manilaDate();const start=`${safe}T00:00:00+08:00`;const endDate=dateShift(safe,1);const end=`${endDate}T00:00:00+08:00`;
+  const {data,error}=await sb.from('attendance_records').select('*').gte('timestamp',start).lt('timestamp',end).order('timestamp',{ascending:true});
+  if(error){toast('Failed to load attendance: '+error.message,'error');return;}
+  state.attendance={};
+  (data||[]).forEach(row=>{
+    const status=normalizeStatus(row.status);const uid=normalizeUid(row.scanned_rfid);const studentId=row.student_id?String(row.student_id):'';const key=studentId||uid;if(!key)return;
+    const existing=state.attendance[key]||{inTime:null,outTime:null,status:'Absent',id:row.id};
+    if(status==='Present'||status==='Late'){if(!existing.inTime){existing.inTime=row.timestamp;existing.status=status;}}
+    else if(status==='Time Out'){if(!existing.outTime)existing.outTime=row.timestamp;}
+    else if(status==='Absent'&&!existing.inTime){existing.status='Absent';}
+    state.attendance[key]=existing;
+    if(studentId&&uid&&!state.attendance[uid])state.attendance[uid]=existing;
+  });
+  state.attendanceDate=safe;renderGrid();await loadAtRiskStudents();
+}
+function renderGrid(){
+  const search=state.searchQ.toLowerCase().trim();
+  const filtered=state.students.filter(student=>{
+    const att=getAttendanceForStudent(student);const present=!!att&&att.status!=='Absent'&&(!!att.inTime||att.status==='Present'||att.status==='Late');
+    if(state.filter==='present'&&(!present||att.status==='Late'))return false;
+    if(state.filter==='late'&&(!present||att.status!=='Late'))return false;
+    if(state.filter==='absent'&&present)return false;
+    if(state.filter==='risk'&&!state.riskStudents[String(student.id)])return false;
+    if(!search)return true;
+    return String(student.full_name||'').toLowerCase().includes(search)||String(student.student_id_number||'').toLowerCase().includes(search)||String(student.course_section||'').toLowerCase().includes(search)||String(student.rfid_uid||'').toLowerCase().includes(search);
+  });
+  const total=state.students.length;
+  const presentAll=state.students.filter(s=>{const a=getAttendanceForStudent(s);return a&&a.status!=='Absent'&&!!a.inTime;});
+  const late=presentAll.filter(s=>getAttendanceForStudent(s).status==='Late').length;const present=presentAll.length-late;const absent=total-presentAll.length;const rate=total?Math.round((presentAll.length/total)*100):0;
+  el.statTotal.textContent=total;el.statPresent.textContent=present;el.statLate.textContent=late;el.statAbsent.textContent=absent;el.statRate.textContent=rate+'%';el.showingCount.textContent=`Showing ${filtered.length} of ${total}`;
+  if(!filtered.length){el.studentGrid.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--text-muted);"><div style="font-size:45px">👤</div><div style="font-weight:bold;margin-top:10px;color:var(--text-secondary);">${total?'No students match your search.':'No students enrolled yet.'}</div></div>`;return;}
+  const canManage=state.userRole==='admin'||state.userRole==='teacher';
+  const fragment=document.createDocumentFragment();
+  filtered.forEach(student=>{
+    const att=getAttendanceForStudent(student);const present=!!att&&att.status!=='Absent'&&!!att.inTime;const status=present?(att.status||'Present'):'Absent';const card=document.createElement('div');
+    card.className='student-card '+(!present?'absent-card':status==='Late'?'late-card':'present-card');
+    const badgeClass=!present?'badge-absent':status==='Late'?'badge-late':'badge-present';
+    const risk=state.riskStudents[String(student.id)];
+    card.innerHTML=`<div class="student-card-header"><div class="student-avatar">${esc(initials(student.full_name))}</div><div class="student-info"><div class="student-name" title="${esc(student.full_name)}">${esc(student.full_name||'Unnamed Student')}</div><div class="student-id">${esc(student.student_id_number||'--')}</div></div><span class="status-badge ${badgeClass}">${esc(status)}</span></div>${student.course_section?`<div class="student-section">🎓 ${esc(student.course_section)}</div>`:''}${risk?`<div class="risk-badge">⚠ At Risk</div><div class="risk-streak">${esc(risk.streak)} consecutive school-day absences</div>`:''}<div class="student-times"><div><div class="time-block-label">Time In</div><div class="time-block-val">${esc(att?.inTime?formatTime(att.inTime):'--:-- --')}</div></div><div><div class="time-block-label">Time Out</div><div class="time-block-val">${esc(att?.outTime?formatTime(att.outTime):'--:-- --')}</div></div></div>${canManage?`<div class="card-actions"><button class="mark-student" type="button">Mark Manually</button><button class="delete-student" type="button">Delete</button></div>`:''}`;
+    if(canManage){card.querySelector('.mark-student').addEventListener('click',()=>openManualModal(student));card.querySelector('.delete-student').addEventListener('click',()=>deleteStudent(student.id,student.full_name));}
+    fragment.appendChild(card);
+  });
+  el.studentGrid.innerHTML='';el.studentGrid.appendChild(fragment);
+}
+
+async function deleteStudent(id,name){
+  if(state.userRole!=='admin'){toast('Only an admin can delete students.','error');return;}
+  if(!confirm(`Delete "${name}" from the student list?\n\nThis will remove the student record.`))return;
+  const {error}=await sb.from('students').delete().eq('id',id);if(error){toast('Failed to delete student: '+error.message,'error');return;}
+  state.students=state.students.filter(s=>String(s.id)!==String(id));renderGrid();renderStudentAccounts();toast(`${name} deleted successfully.`,'success');
+}
+
+function openManualModal(student){state.manualTargetStudent=student;el.manualStudentName.textContent=`${student.full_name} (${student.student_id_number||'--'})`;el.manualStatus.value='Present';el.manualNote.value='';el.manualModalOverlay.classList.add('open');}
+function closeManualModal(){el.manualModalOverlay.classList.remove('open');state.manualTargetStudent=null;}
+async function submitManualAttendance(){
+  const student=state.manualTargetStudent;if(!student)return;const status=el.manualStatus.value;const note=el.manualNote.value.trim();const clientTs=new Date().toISOString();el.manualSaveBtn.disabled=true;el.manualSaveBtn.textContent='Saving...';
+  try{
+    if(!navigator.onLine)throw new Error('offline');
+    await insertAttendance(student,status,clientTs,note||null);toast(`Marked ${student.full_name} as ${status}.`,'success');closeManualModal();if(state.attendanceDate)await loadAttendance(state.attendanceDate);
+  }catch(error){
+    if(!navigator.onLine||error.message==='offline'||String(error.message||'').toLowerCase().includes('fetch')){queueAction({type:'manual_attendance',studentId:student.id,status,note:note||null,clientTs});toast(`Offline. Queued ${status} for ${student.full_name}.`,'info');closeManualModal();}
+    else{console.error(error);toast('Failed to save: '+error.message,'error');}
+  }finally{el.manualSaveBtn.disabled=false;el.manualSaveBtn.textContent='Save';}
+}
+
+function openModal(){
+  if(!['admin','teacher'].includes(state.userRole)){toast('You do not have permission to add students.','error');return;}
+  el.inpSid.value='';el.inpName.value='';el.inpUid.value='';el.inpSection.value='';el.inpEmail.value='';el.inpPassword.value='';el.scanStatus.textContent='';el.scanStatus.className='scan-status-text';el.modalOverlay.classList.add('open');el.inpSid.focus();
+}
+async function closeModal(){await stopRFIDScan();el.modalOverlay.classList.remove('open');}
+
+async function createStudentAuthAccount(student,email,password){
+  if(state.userRole!=='admin')throw new Error('Only an admin can create student portal accounts.');
+  const {data,error}=await sbAuth.auth.signUp({email,password,options:{data:{role:'student',student_id_number:student.student_id_number,student_uuid:student.id}}});
+  if(error)throw error;
+  if(!data.user)throw new Error('Supabase did not return the new student account ID.');
+  const {error:updateError}=await sb.from('students').update({auth_user_id:data.user.id}).eq('id',student.id);
+  if(updateError)throw updateError;
+  student.auth_user_id=data.user.id;
+  return data;
+}
+
+async function saveStudent(){
+  const studentId=el.inpSid.value.trim(),name=el.inpName.value.trim(),uid=normalizeUid(el.inpUid.value),section=el.inpSection.value.trim(),email=el.inpEmail.value.trim().toLowerCase(),password=el.inpPassword.value;
+  if(!studentId||!name||!uid){toast('Please complete the Student ID, Full Name, and RFID UID fields.','error');return;}
+  if((email&&!password)||(!email&&password)){toast('Enter both the student email and password, or leave both blank.','error');return;}
+  if(password&&password.length<6){toast('Student password must be at least 6 characters.','error');return;}
+  el.modalSaveBtn.disabled=true;el.modalSaveBtn.textContent='Saving...';
+  let created=null;
+  try{
+    const {data,error}=await sb.from('students').insert({student_id_number:studentId,full_name:name,rfid_uid:uid,course_section:section||null}).select().single();
+    if(error)throw error;created=data;
+    if(email&&password){
+      try{await createStudentAuthAccount(created,email,password);}catch(accountError){await sb.from('students').delete().eq('id',created.id);throw new Error(`Student was not saved because the portal account could not be created: ${accountError.message}`);}
+    }
+    state.students.push(created);state.students.sort((a,b)=>String(a.student_id_number).localeCompare(String(b.student_id_number),undefined,{numeric:true}));await closeModal();renderGrid();if(state.userRole==='admin')renderStudentAccounts();toast(email&&password?`${name} and the student portal account were created.`:`${name} added successfully.`,'success');
+  }catch(error){console.error(error);if(error.code==='23505')toast('Student ID or RFID UID already exists.','error');else toast('Error saving student: '+error.message,'error');}
+  finally{el.modalSaveBtn.disabled=false;el.modalSaveBtn.textContent='Save Student';}
+}
+
+async function createPortalAccountForExisting(student){
+  if(state.userRole!=='admin'){toast('Only an admin can create student portal accounts.','error');return;}
+  const email=prompt(`Portal email for ${student.full_name}:`);if(email===null)return;
+  const password=prompt('Temporary password, at least 6 characters:');if(password===null)return;
+  const cleanEmail=email.trim().toLowerCase();if(!cleanEmail||password.length<6){toast('Enter a valid email and a password with at least 6 characters.','error');return;}
+  try{await createStudentAuthAccount(student,cleanEmail,password);await loadStudents();renderStudentAccounts();toast('Student portal account created. Email confirmation may be required by your Supabase settings.','success');}
+  catch(error){console.error(error);toast('Could not create portal account: '+error.message,'error');}
+}
+
+function startRFIDScan(){
+  if(state.scanChannel){stopRFIDScan();el.scanStatus.textContent='RFID scan cancelled.';el.scanStatus.className='scan-status-text';return;}
+  el.scanStatus.textContent='Tap the RFID card now...';el.scanStatus.className='scan-status-text detecting';el.scanUidBtn.textContent='Cancel';
+  state.scanChannel=sb.channel('rfid_registration_'+Date.now());
+  state.scanChannel.on('postgres_changes',{event:'INSERT',schema:'public',table:'unregistered_scans'},payload=>{
+    const uid=normalizeUid(payload.new?.rfid_uid);if(!uid)return;el.inpUid.value=uid;el.scanStatus.textContent=`Card detected: ${uid}`;el.scanStatus.className='scan-status-text detected';toast('RFID card detected.','success');stopRFIDScan();
+  }).subscribe(status=>{if(status==='CHANNEL_ERROR'){el.scanStatus.textContent='Unable to listen for RFID scans.';el.scanStatus.className='scan-status-text failed';toast('RFID registration listener failed. Check that unregistered_scans exists and is in Realtime.','error');}});
+  state.scanTimer=setTimeout(()=>{if(state.scanChannel){el.scanStatus.textContent='No card detected.';el.scanStatus.className='scan-status-text failed';stopRFIDScan();}},30000);
+}
+async function stopRFIDScan(){clearTimeout(state.scanTimer);state.scanTimer=null;if(state.scanChannel){try{await state.scanChannel.unsubscribe();}catch(e){}state.scanChannel=null;}el.scanUidBtn.textContent='💳 Scan ID';}
+
+function subscribeAttendance(){
+  if(state.mainChannel){try{state.mainChannel.unsubscribe();}catch(e){}}
+  connectionStatus('connecting');
+  state.mainChannel=sb.channel('attendance_live_global');
+  state.mainChannel.on('postgres_changes',{event:'INSERT',schema:'public',table:'attendance_records'},handleAttendance)
+    .subscribe(status=>{
+      if(status==='SUBSCRIBED')connectionStatus('live');
+      else if(status==='CHANNEL_ERROR'||status==='CLOSED')connectionStatus('error');
+    });
+}
+
+function subscribeScanEvents(){
+  if(state.scanEventChannel){try{state.scanEventChannel.unsubscribe();}catch(e){}}
+  state.scanEventChannel=sb.channel('scan_events_global');
+  state.scanEventChannel.on('postgres_changes',{event:'INSERT',schema:'public',table:'attendance_scan_events'},payload=>handleScanEvent(payload.new))
+    .subscribe(status=>{ if(status==='SUBSCRIBED')renderLiveOps(); });
+}
+
+async function handleScanEvent(event){
+  if(!event)return;
+  const student=event.student_id?state.students.find(s=>String(s.id)===String(event.student_id)):null;
+  const normalized=String(event.result_status||'').toLowerCase();
+  const type=normalized==='present'?'present':normalized==='late'?'late':normalized==='time_out'||normalized==='timed_out'?'timeout':normalized==='duplicate'?'duplicate':normalized==='unknown'?'unknown':'info';
+  const scan={
+    type,
+    name:student?.full_name || (event.student_id ? 'Unknown Student' : 'Unknown Card'),
+    uid:event.scanned_rfid||'',
+    studentId:student?.student_id_number||'',
+    section:student?.course_section||'',
+    readerId:event.reader_id||'UNKNOWN',
+    timeLabel:formatTime(event.created_at),
+    message:event.message||''
+  };
+  addLiveScanItem(scan);
+  if(type!=='duplicate'&&type!=='info') {
+    state.scanHistory.unshift(scan);
+    if(state.scanHistory.length>MAX_HISTORY)state.scanHistory.pop();
+    renderScanHero(scan);
+    renderHistory();
+    notifyScan(scan);
+  }
+  renderLiveOps();
+}
+
+function subscribeTeacherPresence(){
+  if(state.presenceChannel){try{state.presenceChannel.unsubscribe();}catch(e){}}
+  state.presenceChannel=sb.channel('ga_teacher_presence',{config:{presence:{key:state.userId||crypto.randomUUID()}}});
+  state.presenceChannel
+    .on('presence',{event:'sync'},()=>{
+      const raw=state.presenceChannel.presenceState();
+      const map=new Map();
+      Object.entries(raw||{}).forEach(([key,values])=>{
+        const latest=Array.isArray(values)?values[values.length-1]:values;
+        if(latest?.role==='teacher')map.set(key,latest);
+      });
+      state.teacherPresence=map;
+      renderTeacherPresence();
+    })
+    .on('presence',{event:'join'},renderTeacherPresence)
+    .on('presence',{event:'leave'},renderTeacherPresence)
+    .subscribe(async status=>{
+      if(status==='SUBSCRIBED'&&state.userRole==='teacher'){
+        await state.presenceChannel.track({
+          user_id:state.userId,
+          role:'teacher',
+          name:state.currentUser?.user_metadata?.full_name||state.currentProfile?.full_name||state.currentUser?.email||'Teacher',
+          email:state.currentUser?.email||'',
+          online_at:new Date().toISOString()
+        });
+      }
+    });
+}
+
+function renderTeacherPresence(){
+  if(!el.teacherPresenceList||!el.teacherOnlineCount)return;
+  const values=[...state.teacherPresence.values()];
+  el.teacherOnlineCount.textContent=values.length;
+  if(!values.length){el.teacherPresenceList.innerHTML='<div class="ops-empty">No teachers connected yet.</div>';return;}
+  el.teacherPresenceList.innerHTML=values.map(item=>`<div class="ops-item"><span class="ops-dot online"></span><div class="ops-main"><strong>${esc(item.name||'Teacher')}</strong><span>${esc(item.email||'Teacher account')}</span></div><span class="ops-status" style="color:var(--green)">ONLINE</span></div>`).join('');
+}
+
+function subscribeReaderHealth(){
+  if(state.readerChannel){try{state.readerChannel.unsubscribe();}catch(e){}}
+  state.readerChannel=sb.channel('reader_health_global');
+  state.readerChannel.on('postgres_changes',{event:'*',schema:'public',table:'reader_heartbeats'},()=>loadReaderHealth())
+    .subscribe();
+}
+
+async function loadReaderHealth(){
+  if(!el.readerHealthList)return;
+  const {data,error}=await sb.from('reader_heartbeats').select('reader_id,last_seen,reader_name').order('reader_id',{ascending:true});
+  if(error){
+    el.readerOnlineCount.textContent='0';
+    el.readerHealthList.innerHTML='<div class="ops-empty">Reader heartbeat table not configured.</div>';
+    return;
+  }
+  state.readerHealth=new Map((data||[]).map(row=>[String(row.reader_id),row]));
+  renderReaderHealth();
+}
+
+function renderReaderHealth(){
+  if(!el.readerHealthList)return;
+  const now=Date.now();
+  const values=[...state.readerHealth.values()].sort((a,b)=>String(a.reader_id).localeCompare(String(b.reader_id)));
+  const online=values.filter(r=>{const t=new Date(r.last_seen).getTime();return Number.isFinite(t)&&(now-t)<=45000;});
+  el.readerOnlineCount.textContent=online.length;
+  if(!values.length){el.readerHealthList.innerHTML='<div class="ops-empty">No reader heartbeat data.</div>';return;}
+  el.readerHealthList.innerHTML=values.map(r=>{
+    const ms=now-new Date(r.last_seen).getTime();
+    const live=Number.isFinite(ms)&&ms<=45000;
+    return `<div class="ops-item"><span class="ops-dot ${live?'online':'offline'}"></span><div class="ops-main"><strong>${esc(r.reader_name||r.reader_id)}</strong><span>${esc(r.reader_id)} • ${live?'Last seen '+Math.round(ms/1000)+'s ago':'Offline'}</span></div><span class="ops-status" style="color:${live?'var(--green)':'var(--red)'}">${live?'ONLINE':'OFFLINE'}</span></div>`;
+  }).join('');
+}
+
+function renderLiveOps(){
+  renderTeacherPresence();
+  renderReaderHealth();
+  if(el.opsLiveLabel)el.opsLiveLabel.textContent='LIVE';
+}
+
+function addLiveScanItem(scan){
+  if(!el.liveScanList||!scan)return;
+  const empty=el.liveScanList.querySelector('.ops-empty');if(empty)empty.remove();
+  const label=scan.type==='present'?'PRESENT':scan.type==='late'?'LATE':scan.type==='timeout'?'TIME OUT':scan.type==='duplicate'?'DUPLICATE':scan.type==='unknown'?'UNKNOWN':'EVENT';
+  const color=scan.type==='present'?'var(--green)':scan.type==='late'||scan.type==='timeout'?'var(--amber)':scan.type==='duplicate'?'var(--muted)':'var(--red)';
+  const node=document.createElement('div');node.className='ops-item';node.innerHTML=`<span class="ops-dot ${scan.type==='duplicate'?'':'busy'}" style="background:${color}"></span><div class="ops-main"><strong>${esc(scan.name||'Unknown')}</strong><span>${esc(scan.studentId||scan.uid||'--')} • ${esc(scan.readerId||'--')}</span></div><span class="ops-status" style="color:${color}">${label}</span>`;
+  el.liveScanList.prepend(node);
+  while(el.liveScanList.children.length>8)el.liveScanList.removeChild(el.liveScanList.lastChild);
+  el.liveScanCount.textContent=el.liveScanList.children.length;
+}
+
+async function handleAttendance(payload){
+  const row=payload?.new;if(!row)return;
+  const rowDate=getManilaDateFromTimestamp(row.timestamp);
+  if(rowDate===state.attendanceDate)await loadAttendance(state.attendanceDate);
+  const uid=normalizeUid(row.scanned_rfid);
+  const student=row.student_id?state.students.find(s=>String(s.id)===String(row.student_id)):state.students.find(s=>normalizeUid(s.rfid_uid)===uid);
+  const normalized=normalizeStatus(row.status);
+  const type=normalized==='Present'?'present':normalized==='Late'?'late':normalized==='Time Out'?'timeout':'unknown';
+  const scan={type,name:student?.full_name||'Unknown Card',uid:row.scanned_rfid||'',studentId:student?.student_id_number||'',section:student?.course_section||'',readerId:row.reader_id||'UNKNOWN',timeLabel:formatTime(row.timestamp)};
+  state.scanHistory.unshift(scan);if(state.scanHistory.length>MAX_HISTORY)state.scanHistory.pop();
+  renderScanHero(scan);renderHistory();notifyScan(scan);
+}
+
+function renderScanHero(scan){
+  if(!scan){el.scanContent.innerHTML='<div class="scan-idle"><div class="scan-idle-icon" style="font-size:38px">💳</div><div class="scan-idle-text">Waiting for card tap...</div></div>';return;}
+  let pillClass='pill-unknown',text='Not Registered';if(scan.type==='present'){pillClass='pill-present';text='Present - Time In';}if(scan.type==='late'){pillClass='pill-timeout';text='Late - Time In';}if(scan.type==='timeout'){pillClass='pill-timeout';text='Time Out';}
+  el.scanContent.innerHTML=`<div><div class="scan-name">${esc(scan.name)}</div><div class="scan-meta">${scan.type==='unknown'?`UID: ${esc(scan.uid)}`:`${esc(scan.studentId)} • ${esc(scan.section||'No section')} • ${esc(scan.readerId||'Reader')}`}</div><span class="scan-pill ${pillClass}">${esc(text)}</span><div class="scan-time-label">${esc(scan.timeLabel)}</div></div>`;
+}
+function renderHistory(){
+  if(!state.scanHistory.length){el.historyList.innerHTML='<div class="history-empty">No scans this session</div>';return;}
+  el.historyList.innerHTML=state.scanHistory.map(scan=>{const dot=scan.type==='present'?'dot-present':scan.type==='late'||scan.type==='timeout'?'dot-timeout':'dot-unknown';const badge=scan.type==='present'?'IN':scan.type==='late'?'LATE':scan.type==='timeout'?'OUT':'N/A';const bc=scan.type==='present'?'hb-present':scan.type==='late'||scan.type==='timeout'?'hb-timeout':'hb-unknown';return `<div class="history-item"><div class="history-dot ${dot}"></div><div class="history-info"><div class="history-name">${esc(scan.name)}</div><div class="history-time">${esc(scan.timeLabel)}</div></div><div class="history-badge ${bc}">${badge}</div></div>`;}).join('');
+}
+function setFilter(filter){state.filter=filter;document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));renderGrid();}
+
+async function refresh(){el.refreshBtn.disabled=true;el.refreshBtn.textContent='Loading...';try{await loadStudents();await loadAttendance(state.attendanceDate||manilaDate());if(navigator.onLine)await flushQueue();if(state.userRole==='admin')renderStudentAccounts();if(state.userRole==='teacher'&&document.getElementById('view-grades')?.classList.contains('active')){renderGradeStudentOptions();await loadTeacherGrades();}toast('Data refreshed.','success');}catch(error){console.error(error);toast('Refresh failed: '+error.message,'error');}finally{el.refreshBtn.disabled=false;el.refreshBtn.textContent='↻ Refresh';}}
+
+async function getReportAttendance(date){
+  const start=`${date}T00:00:00+08:00`,endDate=dateShift(date,1),end=`${endDate}T00:00:00+08:00`;
+  const {data,error}=await sb.from('attendance_records').select('*').gte('timestamp',start).lt('timestamp',end).order('timestamp',{ascending:true});if(error)throw error;
+  const attendance={};
+  (data||[]).forEach(row=>{const status=normalizeStatus(row.status);const uid=normalizeUid(row.scanned_rfid);const key=row.student_id?String(row.student_id):uid;if(!key)return;const a=attendance[key]||{inTime:null,outTime:null,status:'Absent'};if((status==='Present'||status==='Late')&&!a.inTime){a.inTime=row.timestamp;a.status=status;}if(status==='Time Out'&&!a.outTime)a.outTime=row.timestamp;if(status==='Absent'&&!a.inTime)a.status='Absent';attendance[key]=a;if(uid&&!attendance[uid])attendance[uid]=a;});
+  return attendance;
+}
+function reportAttendanceForStudent(attendance,student){return attendance[String(student.id)]||attendance[normalizeUid(student.rfid_uid)]||null;}
+
+async function exportExcel(){
+  const date=el.printDate.value;if(!date){toast('Please select a date.','error');return;}if(!window.XLSX?.utils){toast('Excel library did not load.','error');return;}el.excelBtn.disabled=true;el.excelBtn.textContent='Creating Excel...';
+  try{
+    const attendance=await getReportAttendance(date);const rows=state.students.map((student,i)=>{const a=reportAttendanceForStudent(attendance,student);const status=a?.status==='Late'?'Late':a?.inTime?(a.outTime?'Timed Out':'Present'):'Absent';return {'No.':i+1,'Student ID':student.student_id_number||'--','Full Name':student.full_name||'--','Course / Section':student.course_section||'--','Status':status,'Time In':a?.inTime?formatTime(a.inTime):'--','Time Out':a?.outTime?formatTime(a.outTime):'--'};});
+    const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:6},{wch:18},{wch:32},{wch:25},{wch:15},{wch:15},{wch:15}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Attendance');XLSX.writeFile(wb,`Attendance_${date}.xlsx`);toast('Excel file exported successfully.','success');
+  }catch(error){console.error(error);toast('Failed to export Excel: '+error.message,'error');}finally{el.excelBtn.disabled=false;el.excelBtn.textContent='📊 Export Excel';}
+}
+
+async function printPDF(){
+  const date=el.printDate.value;if(!date){toast('Please select a date.','error');return;}if(!window.jspdf?.jsPDF){toast('PDF library did not load.','error');return;}if(!window.jspdf.jsPDF.API.autoTable){toast('PDF table library did not load.','error');return;}el.printBtn.disabled=true;el.printBtn.textContent='Creating PDF...';
+  try{
+    const attendance=await getReportAttendance(date);let present=0,late=0,timedOut=0,absent=0;
+    const rows=state.students.map((student,i)=>{const a=reportAttendanceForStudent(attendance,student);let status='Absent';if(a?.outTime){status='Timed Out';timedOut++;}else if(a?.status==='Late'){status='Late';late++;}else if(a?.inTime){status='Present';present++;}else absent++;return [i+1,student.student_id_number||'--',student.full_name||'--',student.course_section||'--',status,a?.inTime?formatTime(a.inTime):'--',a?.outTime?formatTime(a.outTime):'--'];});
+    const total=state.students.length,attended=present+late+timedOut,rate=total?Math.round(attended/total*100):0;const {jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});const w=doc.internal.pageSize.getWidth(),h=doc.internal.pageSize.getHeight();const selectedDate=new Date(`${date}T12:00:00+08:00`);doc.setFillColor(142,0,0);doc.rect(0,0,w,32,'F');doc.setFillColor(212,175,55);doc.rect(0,32,w,2,'F');
+    const logo=document.querySelector('.header-logo-wrap img');let x=14;if(logo&&logo.complete&&logo.naturalWidth>0){try{doc.addImage(logo,'JPEG',14,5,22,22);x=40;}catch(e){}}doc.setFont('helvetica','bold');doc.setFontSize(20);doc.setTextColor(255,255,255);doc.text('GLOBAL ACADEMY OF TECHNOLOGY AND ENTREPRENEURSHIP, INC.',x,13);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('SMART RFID ATTENDANCE SYSTEM',x,20);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('DAILY ATTENDANCE REPORT',x,27);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(formatDate(selectedDate),w-14,15,{align:'right'});doc.setFontSize(7);doc.text('Asia/Manila',w-14,21,{align:'right'});
+    const boxY=40,boxH=18,gap=3,boxW=(w-28-gap*4)/5;[['TOTAL',total],['PRESENT',present],['LATE',late],['TIMED OUT',timedOut],['ABSENT',absent]].forEach((item,i)=>{const bx=14+i*(boxW+gap);doc.setFillColor(248,248,248);doc.roundedRect(bx,boxY,boxW,boxH,2,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(100,100,100);doc.text(item[0],bx+4,boxY+6);doc.setFontSize(14);doc.setTextColor(142,0,0);doc.text(String(item[1]),bx+4,boxY+14);});doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(80,80,80);doc.text(`Attendance Rate: ${rate}%`,w-14,64,{align:'right'});
+    doc.autoTable({startY:68,margin:{left:14,right:14},head:[['No.','Student ID','Full Name','Course / Section','Status','Time In','Time Out']],body:rows,theme:'grid',styles:{font:'helvetica',fontSize:8,cellPadding:2.5,valign:'middle',lineColor:[220,220,220],lineWidth:0.2},headStyles:{fillColor:[142,0,0],textColor:[255,255,255],fontStyle:'bold',halign:'center'},alternateRowStyles:{fillColor:[250,245,245]},columnStyles:{0:{halign:'center',cellWidth:12},1:{halign:'center',cellWidth:30},2:{cellWidth:65},3:{cellWidth:48},4:{halign:'center',cellWidth:27},5:{halign:'center',cellWidth:28},6:{halign:'center',cellWidth:28}},didParseCell:function(cell){if(cell.section==='body'&&cell.column.index===4){if(cell.cell.raw==='Present'){cell.cell.styles.textColor=[26,122,74];cell.cell.styles.fontStyle='bold';}else if(cell.cell.raw==='Late'||cell.cell.raw==='Timed Out'){cell.cell.styles.textColor=[196,122,0];cell.cell.styles.fontStyle='bold';}else if(cell.cell.raw==='Absent'){cell.cell.styles.textColor=[120,120,120];cell.cell.styles.fontStyle='bold';}}}});
+    const pages=doc.internal.getNumberOfPages();for(let p=1;p<=pages;p++){doc.setPage(p);doc.setDrawColor(210,210,210);doc.line(14,h-14,w-14,h-14);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(130,130,130);doc.text('Generated by Smart RFID Attendance System',14,h-8);doc.text(`Page ${p} of ${pages}`,w-14,h-8,{align:'right'});}doc.save(`Global_Academy_Attendance_${date}.pdf`);toast('PDF created successfully.','success');
+  }catch(error){console.error(error);toast('Failed to create PDF: '+error.message,'error');}finally{el.printBtn.disabled=false;el.printBtn.textContent='🖨 Print PDF';}
+}
+
+function renderStudentAccounts(){
+  if(state.userRole!=='admin'||!el.studentsAccountsBody)return;
+  if(!state.students.length){el.studentsAccountsBody.innerHTML='<tr><td colspan="6">No students enrolled yet.</td></tr>';return;}
+  el.studentsAccountsBody.innerHTML=state.students.map(student=>{
+    const linked=!!student.auth_user_id;
+    return `<tr><td>${esc(student.student_id_number||'--')}</td><td>${esc(student.full_name||'--')}</td><td>${esc(student.course_section||'--')}</td><td>${esc(student.rfid_uid||'--')}</td><td>${linked?`<span class="role-pill">Linked</span>`:'<span style="color:var(--text-muted);font-size:11px;">No login</span>'}</td><td><div class="admin-inline-actions">${linked?'<span style="font-size:11px;color:var(--green);font-weight:bold;">Portal ready</span>':'<button type="button" class="btn btn-primary btn-sm create-portal-btn">Create Login</button>'}</div></td></tr>`;
+  }).join('');
+  el.studentsAccountsBody.querySelectorAll('.create-portal-btn').forEach((button,i)=>{button.addEventListener('click',()=>createPortalAccountForExisting(state.students[i]));});
+}
+
+function gradeNumber(value){
+  if(value===null||value===undefined||String(value).trim()==='')return null;
+  const n=Number(value);
+  return Number.isFinite(n)?Math.round(n*100)/100:null;
+}
+
+function validateGradeValue(value,label){
+  if(value===null)return true;
+  if(!Number.isFinite(value)||value<0||value>100){
+    toast(`${label} must be between 0 and 100.`,'error');
+    return false;
+  }
+  return true;
+}
+
+function resetGradeForm(){
+  state.editingGradeId=null;
+  el.gradeSubject.value='';
+  el.gradeSchoolYear.value='';
+  el.gradeSemester.value='1st Semester';
+  el.gradePrelim.value='';
+  el.gradeMidterm.value='';
+  el.gradePrefinal.value='';
+  el.gradeFinal.value='';
+  el.gradeFinalGrade.value='';
+  el.gradeRemarks.value='';
+  el.gradeEditStatus.textContent='';
+  el.saveGradeBtn.textContent='Save Grade';
+  if(el.gradeStudent.options.length)el.gradeStudent.selectedIndex=0;
+}
+
+function renderGradeStudentOptions(selectedId){
+  if(!el.gradeStudent)return;
+  const current=selectedId||el.gradeStudent.value||'';
+  if(!state.students.length){
+    el.gradeStudent.innerHTML='<option value="">No students available</option>';
+    return;
+  }
+  const sorted=[...state.students].sort((a,b)=>String(a.student_id_number||'').localeCompare(String(b.student_id_number||''),undefined,{numeric:true}));
+  el.gradeStudent.innerHTML='<option value="">Select a student</option>'+sorted.map(student=>`<option value="${esc(student.id)}">${esc(student.student_id_number||'--')} • ${esc(student.full_name||'Unnamed Student')}${student.course_section?` • ${esc(student.course_section)}`:''}</option>`).join('');
+  if(current&&sorted.some(s=>String(s.id)===String(current)))el.gradeStudent.value=current;
+}
+
+function gradeFormPayload(){
+  const studentId=el.gradeStudent.value;
+  const subject=el.gradeSubject.value.trim();
+  const schoolYear=el.gradeSchoolYear.value.trim();
+  const semester=el.gradeSemester.value;
+  const prelim=gradeNumber(el.gradePrelim.value);
+  const midterm=gradeNumber(el.gradeMidterm.value);
+  const prefinal=gradeNumber(el.gradePrefinal.value);
+  const final=gradeNumber(el.gradeFinal.value);
+  const finalGrade=gradeNumber(el.gradeFinalGrade.value);
+
+  if(!studentId){toast('Select a student.','error');return null;}
+  if(!subject){toast('Enter the subject.','error');return null;}
+  if(!validateGradeValue(prelim,'Prelim')||!validateGradeValue(midterm,'Midterm')||!validateGradeValue(prefinal,'Prefinal')||!validateGradeValue(final,'Final')||!validateGradeValue(finalGrade,'Final Grade'))return null;
+
+  return {
+    student_id:studentId,
+    subject,
+    prelim,
+    midterm,
+    prefinal,
+    final,
+    final_grade:finalGrade,
+    remarks:el.gradeRemarks.value.trim()||null,
+    school_year:schoolYear||null,
+    semester:semester||null
+  };
+}
+
+function calculateFinalGrade(){
+  const values=[el.gradePrelim.value,el.gradeMidterm.value,el.gradePrefinal.value,el.gradeFinal.value]
+    .map(v=>gradeNumber(v))
+    .filter(v=>v!==null);
+  if(values.length!==4){
+    toast('Enter Prelim, Midterm, Prefinal, and Final first.','error');
+    return;
+  }
+  const average=values.reduce((sum,v)=>sum+v,0)/values.length;
+  el.gradeFinalGrade.value=(Math.round(average*100)/100).toFixed(2);
+}
+
+async function saveGrade(){
+  if(state.userRole!=='teacher'){
+    toast('Only teachers can manage grades.','error');
+    return;
+  }
+  const payload=gradeFormPayload();
+  if(!payload)return;
+
+  el.saveGradeBtn.disabled=true;
+  el.saveGradeBtn.textContent=state.editingGradeId?'Updating...':'Saving...';
+
+  try{
+    let error=null;
+    let saved=null;
+    if(state.editingGradeId){
+      const result=await sb.from('grades').update(payload).eq('id',state.editingGradeId).select().single();
+      error=result.error;saved=result.data;
+    }else{
+      const result=await sb.from('grades').insert(payload).select().single();
+      error=result.error;saved=result.data;
+    }
+    if(error)throw error;
+
+    try{
+      await sb.from('audit_logs').insert({
+        user_id:state.userId||null,
+        action:state.editingGradeId?'update_grade':'create_grade',
+        description:`${state.editingGradeId?'Updated':'Added'} ${payload.subject} grade for student ${payload.student_id}`,
+        target_id:String(saved?.id||state.editingGradeId||'')
+      });
+    }catch(e){console.warn('Grade audit log skipped:',e.message);}
+
+    toast(state.editingGradeId?'Grade updated successfully.':'Grade added successfully.','success');
+    resetGradeForm();
+    await loadTeacherGrades();
+  }catch(error){
+    console.error('Save grade error:',error);
+    if(error.code==='23505')toast('A duplicate grade record already exists.','error');
+    else toast('Failed to save grade: '+error.message,'error');
+  }finally{
+    el.saveGradeBtn.disabled=false;
+    el.saveGradeBtn.textContent='Save Grade';
+  }
+}
+
+async function loadTeacherGrades(){
+  if(state.userRole!=='teacher'||!el.teacherGradesBody)return;
+  el.teacherGradesBody.innerHTML='<tr><td colspan="12" class="grade-empty">Loading grades...</td></tr>';
+  const {data,error}=await sb
+    .from('grades')
+    .select('id,student_id,subject,prelim,midterm,prefinal,final,final_grade,remarks,school_year,semester,created_at')
+    .order('created_at',{ascending:false});
+
+  if(error){
+    console.error('Load teacher grades error:',error);
+    el.teacherGradesBody.innerHTML=`<tr><td colspan="12" class="grade-empty">Unable to load grades: ${esc(error.message)}</td></tr>`;
+    return;
+  }
+
+  if(!data?.length){
+    el.teacherGradesBody.innerHTML='<tr><td colspan="12" class="grade-empty">No grades recorded yet.</td></tr>';
+    return;
+  }
+
+  const byId=new Map(state.students.map(student=>[String(student.id),student]));
+  el.teacherGradesBody.innerHTML=data.map(row=>{
+    const student=byId.get(String(row.student_id));
+    return `<tr>
+      <td>${esc(student?.student_id_number||'--')}</td>
+      <td>${esc(student?.full_name||'Unknown Student')}</td>
+      <td>${esc(row.subject||'--')}</td>
+      <td>${esc(row.school_year||'--')}</td>
+      <td>${esc(row.semester||'--')}</td>
+      <td class="grade-number">${row.prelim!=null?esc(row.prelim):'--'}</td>
+      <td class="grade-number">${row.midterm!=null?esc(row.midterm):'--'}</td>
+      <td class="grade-number">${row.prefinal!=null?esc(row.prefinal):'--'}</td>
+      <td class="grade-number">${row.final!=null?esc(row.final):'--'}</td>
+      <td class="grade-number">${row.final_grade!=null?esc(row.final_grade):'--'}</td>
+      <td>${esc(row.remarks||'--')}</td>
+      <td><div class="grade-actions-cell"><button type="button" class="btn btn-ghost btn-sm grade-edit-btn" data-id="${esc(row.id)}">Edit</button><button type="button" class="btn btn-sm" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)" data-id="${esc(row.id)}" data-action="delete-grade">Delete</button></div></td>
+    </tr>`;
+  }).join('');
+
+  el.teacherGradesBody.querySelectorAll('.grade-edit-btn').forEach(button=>{
+    button.addEventListener('click',()=>editGrade(button.dataset.id,data));
+  });
+  el.teacherGradesBody.querySelectorAll('[data-action="delete-grade"]').forEach(button=>{
+    button.addEventListener('click',()=>deleteGrade(button.dataset.id));
+  });
+}
+
+function editGrade(id,rows){
+  const row=rows.find(item=>String(item.id)===String(id));
+  if(!row)return;
+  state.editingGradeId=row.id;
+  renderGradeStudentOptions(row.student_id);
+  el.gradeStudent.value=String(row.student_id);
+  el.gradeSubject.value=row.subject||'';
+  el.gradeSchoolYear.value=row.school_year||'';
+  el.gradeSemester.value=row.semester||'1st Semester';
+  el.gradePrelim.value=row.prelim??'';
+  el.gradeMidterm.value=row.midterm??'';
+  el.gradePrefinal.value=row.prefinal??'';
+  el.gradeFinal.value=row.final??'';
+  el.gradeFinalGrade.value=row.final_grade??'';
+  el.gradeRemarks.value=row.remarks||'';
+  el.gradeEditStatus.textContent=`Editing grade record ${String(row.id).slice(0,8)}...`;
+  el.saveGradeBtn.textContent='Update Grade';
+  document.getElementById('view-grades')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function deleteGrade(id){
+  if(state.userRole!=='teacher'){toast('Only teachers can delete grades.','error');return;}
+  if(!confirm('Delete this grade record? This cannot be undone.'))return;
+  try{
+    const {error}=await sb.from('grades').delete().eq('id',id);
+    if(error)throw error;
+    try{
+      await sb.from('audit_logs').insert({user_id:state.userId||null,action:'delete_grade',description:'Deleted a grade record',target_id:String(id)});
+    }catch(e){console.warn('Grade delete audit log skipped:',e.message);}
+    if(String(state.editingGradeId)===String(id))resetGradeForm();
+    await loadTeacherGrades();
+    toast('Grade deleted successfully.','success');
+  }catch(error){
+    console.error('Delete grade error:',error);
+    toast('Failed to delete grade: '+error.message,'error');
+  }
+}
+
+async function initializeApp(){
+  if(initialized)return;initialized=true;el.printDate.value=state.attendanceDate||manilaDate();updateClock();if(clockInterval)clearInterval(clockInterval);clockInterval=setInterval(updateClock,1000);connectionStatus('connecting');
+  try{
+    await loadStudents();
+    await loadAttendance(el.printDate.value);
+    renderGrid();
+    renderHistory();
+    renderLiveOps();
+    subscribeAttendance();
+    subscribeScanEvents();
+    subscribeTeacherPresence();
+    await loadReaderHealth();
+    subscribeReaderHealth();
+    if(!state.readerTimer)state.readerTimer=setInterval(loadReaderHealth,15000);
+    if(state.userRole==='admin')renderStudentAccounts();
+    if(state.userRole==='teacher'){renderGradeStudentOptions();}
+    if(navigator.onLine)await flushQueue();
+  }
+  catch(error){console.error(error);toast('Startup error: '+error.message,'error');}
+}
+
+el.loginForm.addEventListener('submit',login);el.studentLogoutBtn.addEventListener('click',logout);el.logoutBtn.addEventListener('click',logout);el.notifBtn.addEventListener('click',toggleNotifications);
+el.loginPassword.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();login();}});
+el.addStudentBtn.addEventListener('click',openModal);el.addStudentBtnAdmin?.addEventListener('click',openModal);el.modalCloseBtn.addEventListener('click',closeModal);el.modalCancelBtn.addEventListener('click',closeModal);el.modalOverlay.addEventListener('click',e=>{if(e.target===el.modalOverlay)closeModal();});el.modalSaveBtn.addEventListener('click',saveStudent);el.scanUidBtn.addEventListener('click',startRFIDScan);
+el.inpUid.addEventListener('input',()=>{el.inpUid.value=normalizeUid(el.inpUid.value);});el.searchInput.addEventListener('input',e=>{state.searchQ=e.target.value;renderGrid();});document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>setFilter(b.dataset.filter)));
+el.refreshBtn.addEventListener('click',refresh);el.riskStatCard.addEventListener('click',()=>setFilter(state.filter==='risk'?'all':'risk'));el.printDate.addEventListener('change',()=>loadAttendance(el.printDate.value));el.printBtn.addEventListener('click',printPDF);el.excelBtn.addEventListener('click',exportExcel);
+el.manualModalCloseBtn.addEventListener('click',closeManualModal);el.manualCancelBtn.addEventListener('click',closeManualModal);el.manualModalOverlay.addEventListener('click',e=>{if(e.target===el.manualModalOverlay)closeManualModal();});el.manualSaveBtn.addEventListener('click',submitManualAttendance);
+
+el.calculateGradeBtn?.addEventListener('click',calculateFinalGrade);
+el.saveGradeBtn?.addEventListener('click',saveGrade);
+el.gradeClearBtn?.addEventListener('click',resetGradeForm);
+el.gradeRefreshBtn?.addEventListener('click',async()=>{renderGradeStudentOptions();await loadTeacherGrades();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(el.modalOverlay.classList.contains('open'))closeModal();if(el.manualModalOverlay.classList.contains('open'))closeManualModal();}});
+
+sb.auth.onAuthStateChange((event,session)=>{setTimeout(()=>{if(session)routeUser(session);else{initialized=false;showLogin();}},0);});
+
+renderQueueBadge();
+checkAuth();
+})();
+
+</script>
+</body>
+</html>
