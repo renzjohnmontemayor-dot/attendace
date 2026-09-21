@@ -12,20 +12,21 @@
 
 <style>
 :root{
-  --maroon:#74152b;
-  --maroon-dark:#4d0d1c;
-  --gold:#d9a441;
-  --gold-light:#f4d78b;
-  --bg:#f5f5f7;
+  --maroon:#821e40;
+  --maroon-dark:#3c1020;
+  --gold:#edb64d;
+  --gold-light:#ffe2a7;
+  --bg:#f7f7fb;
   --card:#fff;
-  --text:#242424;
-  --muted:#737373;
-  --border:#e5e5e5;
-  --green:#198754;
-  --red:#dc3545;
-  --orange:#f0a202;
-  --blue:#2563eb;
-  --shadow:0 8px 25px rgba(0,0,0,.08);
+  --text:#20202b;
+  --muted:#6f7180;
+  --border:#e6e6ee;
+  --green:#177c50;
+  --red:#c63b4b;
+  --orange:#c87808;
+  --blue:#3158c7;
+  --shadow:0 12px 30px rgba(48,23,36,.08);
+  --shadow-hover:0 18px 38px rgba(48,23,36,.13);
 }
 
 *{
@@ -35,9 +36,11 @@
 }
 
 body{
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:"Segoe UI",Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
   background:var(--bg);
   color:var(--text);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
 }
 
 button,
@@ -49,6 +52,21 @@ textarea{
 
 button{
   cursor:pointer;
+}
+
+button,
+input,
+select,
+textarea{
+  transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease,transform .18s ease;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+  outline:3px solid rgba(237,182,77,.38);
+  outline-offset:2px;
 }
 
 .hidden{
@@ -123,6 +141,7 @@ button{
 .form-group select:focus,
 .form-group textarea:focus{
   border-color:var(--maroon);
+  box-shadow:0 0 0 4px rgba(130,30,64,.10);
 }
 
 .primary-btn{
@@ -136,6 +155,7 @@ button{
 
 .primary-btn:hover{
   background:var(--maroon-dark);
+  transform:translateY(-1px);
 }
 
 .gold-btn{
@@ -153,6 +173,12 @@ button{
   padding:10px 15px;
   border-radius:8px;
   font-weight:700;
+}
+
+.secondary-btn:hover{
+  border-color:rgba(130,30,64,.28);
+  background:#fff8fa;
+  color:var(--maroon);
 }
 
 .danger-btn{
@@ -648,6 +674,868 @@ tr:hover td{
     padding:0 15px;
   }
 }
+
+/* =========================================================
+   EXPERIENCE REFINEMENTS
+========================================================= */
+
+html{
+  scroll-behavior:smooth;
+}
+
+.login-screen{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 12%,rgba(237,182,77,.24),transparent 28%),
+    radial-gradient(circle at 88% 88%,rgba(255,255,255,.10),transparent 32%),
+    linear-gradient(135deg,#260a16 0%,var(--maroon-dark) 42%,var(--maroon) 100%);
+}
+
+.login-screen::before,
+.login-screen::after{
+  content:"";
+  position:absolute;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:50%;
+  pointer-events:none;
+}
+
+.login-screen::before{
+  width:34rem;
+  height:34rem;
+  top:-19rem;
+  right:-10rem;
+}
+
+.login-screen::after{
+  width:26rem;
+  height:26rem;
+  bottom:-16rem;
+  left:-9rem;
+}
+
+.login-box{
+  position:relative;
+  z-index:1;
+  max-width:440px;
+  padding:40px;
+  border:1px solid rgba(255,255,255,.68);
+  border-radius:24px;
+  box-shadow:0 30px 70px rgba(21,4,10,.33);
+}
+
+.login-logo{
+  width:82px;
+  height:82px;
+  padding:3px;
+  border-radius:22px;
+  border:0;
+  box-shadow:0 8px 18px rgba(60,16,32,.14);
+}
+
+.login-title{
+  font-size:1.55rem;
+  letter-spacing:-.035em;
+}
+
+.login-subtitle{
+  font-size:.94rem;
+  margin:8px 0 30px;
+}
+
+.form-group label{
+  color:#373741;
+  font-size:.86rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+  min-height:46px;
+  padding:11px 13px;
+  border-color:#dedee7;
+  border-radius:10px;
+  color:var(--text);
+}
+
+.form-group input::placeholder,
+.toolbar input::placeholder{
+  color:#a0a0ad;
+}
+
+.primary-btn,
+.gold-btn,
+.secondary-btn,
+.danger-btn,
+.success-btn{
+  min-height:40px;
+  border-radius:10px;
+  box-shadow:0 2px 4px rgba(40,20,28,.05);
+}
+
+.primary-btn{
+  background:linear-gradient(135deg,#941f49,var(--maroon));
+  box-shadow:0 8px 16px rgba(130,30,64,.20);
+}
+
+.gold-btn{
+  color:#3c2410;
+  background:linear-gradient(135deg,#f8c866,var(--gold));
+}
+
+.danger-btn:hover,
+.success-btn:hover,
+.gold-btn:hover{
+  filter:brightness(.96);
+  transform:translateY(-1px);
+}
+
+.sidebar{
+  width:276px;
+  display:flex;
+  flex-direction:column;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 10% -5%,rgba(237,182,77,.24),transparent 28%),
+    linear-gradient(180deg,#3d1021 0%,#250915 100%);
+  box-shadow:10px 0 32px rgba(44,12,25,.10);
+}
+
+.brand{
+  min-height:88px;
+  padding:20px 22px;
+  gap:13px;
+  border-color:rgba(255,255,255,.10);
+}
+
+.admin-brand-logo{
+  width:44px;
+  height:44px;
+  padding:2px;
+  border:0;
+  border-radius:13px;
+  box-shadow:0 5px 14px rgba(0,0,0,.20);
+}
+
+.brand-title{
+  letter-spacing:-.01em;
+}
+
+.brand-sub{
+  color:var(--gold-light);
+  opacity:.88;
+  letter-spacing:.03em;
+}
+
+.user-box{
+  position:relative;
+  margin:14px 12px 4px;
+  padding:13px 14px 13px 48px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background:rgba(255,255,255,.07);
+}
+
+.user-box::before{
+  content:"";
+  position:absolute;
+  left:14px;
+  top:50%;
+  width:22px;
+  height:22px;
+  border:2px solid var(--gold);
+  border-radius:50%;
+  transform:translateY(-50%);
+}
+
+.user-name{
+  overflow:hidden;
+  font-size:.9rem;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.user-role{
+  margin-top:2px;
+  color:var(--gold-light);
+  letter-spacing:.08em;
+}
+
+.nav{
+  flex:1;
+  padding:10px 12px 18px;
+}
+
+.nav-section{
+  padding:19px 10px 7px;
+  color:#d4acb9;
+  font-size:.62rem;
+  letter-spacing:.12em;
+}
+
+.nav button{
+  position:relative;
+  display:flex;
+  align-items:center;
+  min-height:42px;
+  margin-bottom:3px;
+  padding:10px 12px 10px 16px;
+  color:rgba(255,255,255,.83);
+  border:1px solid transparent;
+  border-radius:10px;
+  font-size:.9rem;
+}
+
+.nav button::before{
+  content:"";
+  width:6px;
+  height:6px;
+  margin-right:11px;
+  border:1px solid currentColor;
+  border-radius:50%;
+  opacity:.65;
+}
+
+.nav button:hover{
+  background:rgba(255,255,255,.09);
+  color:#fff;
+}
+
+.nav button.active{
+  color:#fff;
+  border-color:rgba(237,182,77,.18);
+  background:linear-gradient(90deg,rgba(237,182,77,.23),rgba(255,255,255,.08));
+  box-shadow:inset 3px 0 0 var(--gold);
+}
+
+.nav button.active::before{
+  border-color:var(--gold);
+  background:var(--gold);
+  opacity:1;
+  box-shadow:0 0 0 3px rgba(237,182,77,.12);
+}
+
+.logout{
+  min-height:42px;
+  margin:16px 12px 20px;
+  border-color:rgba(255,255,255,.18);
+  border-radius:10px;
+  color:rgba(255,255,255,.9);
+}
+
+.logout:hover{
+  border-color:rgba(237,182,77,.55);
+  background:rgba(255,255,255,.08);
+}
+
+.main{
+  margin-left:276px;
+  width:calc(100% - 276px);
+  min-width:0;
+}
+
+.topbar{
+  height:78px;
+  padding:0 32px;
+  border-color:rgba(230,230,238,.92);
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(14px);
+}
+
+.topbar-leading,
+.topbar-actions{
+  display:flex;
+  align-items:center;
+}
+
+.topbar-leading{
+  gap:14px;
+  min-width:0;
+}
+
+.topbar-title-wrap{
+  min-width:0;
+}
+
+.topbar-kicker{
+  color:var(--maroon);
+  font-size:.66rem;
+  font-weight:800;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+
+.page-title{
+  overflow:hidden;
+  font-size:1.32rem;
+  letter-spacing:-.025em;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.topbar-actions{
+  gap:14px;
+}
+
+.topbar-date{
+  padding-right:14px;
+  border-right:1px solid var(--border);
+  color:var(--muted);
+  font-size:.8rem;
+  font-weight:600;
+  white-space:nowrap;
+}
+
+#topUser{
+  position:relative;
+  display:flex;
+  align-items:center;
+  max-width:210px;
+  min-height:40px;
+  padding:8px 12px 8px 38px;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:#fff;
+  color:#393945;
+  font-size:.86rem;
+  font-weight:700;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  box-shadow:0 3px 8px rgba(39,25,32,.04);
+}
+
+#topUser::before{
+  content:"";
+  position:absolute;
+  left:9px;
+  top:50%;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),#f8d27f);
+  box-shadow:inset 0 0 0 4px #fff;
+  transform:translateY(-50%);
+}
+
+.content{
+  max-width:1540px;
+  margin:0 auto;
+  padding:30px 32px 42px;
+}
+
+.stats-grid{
+  grid-template-columns:repeat(auto-fit,minmax(185px,1fr));
+  gap:18px;
+  margin-bottom:22px;
+}
+
+.stat-card{
+  position:relative;
+  overflow:hidden;
+  min-height:128px;
+  padding:21px;
+  border-color:#e8e6eb;
+  border-radius:16px;
+  box-shadow:0 5px 16px rgba(48,23,36,.045);
+}
+
+.stat-card::after{
+  content:"";
+  position:absolute;
+  top:0;
+  right:21px;
+  left:21px;
+  height:3px;
+  border-radius:0 0 5px 5px;
+  background:linear-gradient(90deg,var(--maroon),var(--gold));
+  opacity:.85;
+}
+
+.stat-card:hover,
+.card:hover{
+  border-color:rgba(130,30,64,.16);
+  box-shadow:var(--shadow-hover);
+}
+
+.stat-label{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:.75rem;
+  letter-spacing:.02em;
+  text-transform:uppercase;
+}
+
+.stat-value{
+  margin-top:7px;
+  color:var(--maroon-dark);
+  font-size:2rem;
+  line-height:1.15;
+  letter-spacing:-.045em;
+}
+
+.grid-2,
+.grid-3{
+  gap:20px;
+}
+
+.card{
+  padding:23px;
+  border-color:#e8e6eb;
+  border-radius:16px;
+  box-shadow:0 5px 16px rgba(48,23,36,.045);
+}
+
+.card-title{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-bottom:18px;
+  color:#2e2026;
+  font-size:1.02rem;
+  letter-spacing:-.01em;
+}
+
+.card-title::before{
+  content:"";
+  width:4px;
+  height:18px;
+  border-radius:999px;
+  background:linear-gradient(180deg,var(--gold),var(--maroon));
+}
+
+.toolbar{
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.toolbar input,
+.toolbar select{
+  min-height:42px;
+  min-width:min(100%,260px);
+  padding:10px 12px;
+  border-color:#dedee7;
+  border-radius:10px;
+}
+
+.toolbar input:focus,
+.toolbar select:focus{
+  border-color:var(--maroon);
+  box-shadow:0 0 0 4px rgba(130,30,64,.10);
+  outline:0;
+}
+
+.table-wrap{
+  border:1px solid var(--border);
+  border-radius:12px;
+}
+
+table{
+  min-width:720px;
+}
+
+th,
+td{
+  padding:14px 14px;
+  border-color:#ececf1;
+  vertical-align:middle;
+}
+
+th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  color:#595966;
+  background:#f9f8fa;
+  font-size:.71rem;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+}
+
+tbody tr:last-child td{
+  border-bottom:0;
+}
+
+tr:hover td{
+  background:#fffafd;
+}
+
+.badge{
+  padding:5px 10px;
+  border:1px solid transparent;
+  font-size:.68rem;
+  letter-spacing:.025em;
+}
+
+.badge-present,
+.badge-active{
+  border-color:#bde9ce;
+}
+
+.badge-late{
+  border-color:#f5db9c;
+}
+
+.badge-absent{
+  border-color:#f6bdc5;
+}
+
+.badge-timeout{
+  border-color:#c9d9fa;
+}
+
+.badge-inactive{
+  border-color:#dfe0e7;
+}
+
+.modal{
+  padding:24px;
+  background:rgba(35,10,20,.58);
+  backdrop-filter:blur(4px);
+}
+
+.modal-box{
+  max-width:680px;
+  padding:28px;
+  border:1px solid rgba(255,255,255,.7);
+  border-radius:18px;
+  box-shadow:0 28px 70px rgba(25,6,13,.30);
+}
+
+.modal-title{
+  color:var(--maroon-dark);
+  letter-spacing:-.02em;
+}
+
+.close-btn{
+  width:36px;
+  height:36px;
+  background:#f4f2f4;
+  color:#4f3a43;
+}
+
+.close-btn:hover{
+  background:#eee5e9;
+  color:var(--maroon);
+}
+
+.modal-actions{
+  padding-top:4px;
+}
+
+.profile-header{
+  gap:18px;
+}
+
+.profile-photo{
+  width:82px;
+  height:82px;
+  border-width:4px;
+  box-shadow:0 8px 17px rgba(60,16,32,.13);
+}
+
+.profile-name{
+  color:var(--maroon-dark);
+  font-size:1.45rem;
+  letter-spacing:-.03em;
+}
+
+.profile-meta{
+  font-size:.9rem;
+}
+
+.rfid-box{
+  padding:34px;
+  border-color:rgba(237,182,77,.75);
+  border-radius:14px;
+  background:linear-gradient(135deg,#fffaf0,#fffdf9);
+}
+
+.rfid-icon{
+  filter:drop-shadow(0 5px 8px rgba(237,182,77,.25));
+}
+
+.recent-list li{
+  padding:14px 0;
+  border-color:#ececf1;
+}
+
+.toast-container{
+  right:24px;
+  bottom:24px;
+}
+
+.toast{
+  min-width:300px;
+  padding:14px 16px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;
+  box-shadow:0 16px 34px rgba(25,6,13,.20);
+}
+
+.table-subtext{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.78rem;
+  font-weight:500;
+}
+
+.grade-chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:46px;
+  padding:5px 10px;
+  border:1px solid transparent;
+  border-radius:999px;
+  font-size:.77rem;
+  font-weight:800;
+}
+
+.grade-passing{
+  border-color:#bde9ce;
+  background:#eaf8ef;
+  color:#166441;
+}
+
+.grade-review{
+  border-color:#f3c6ce;
+  background:#fff0f2;
+  color:#a72c40;
+}
+
+.grade-empty{
+  color:var(--muted);
+  font-size:.82rem;
+  font-style:italic;
+}
+
+.grade-hero{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  margin-bottom:22px;
+  padding:26px 28px;
+  overflow:hidden;
+  border:1px solid rgba(130,30,64,.13);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 90% 10%,rgba(237,182,77,.35),transparent 26%),
+    linear-gradient(125deg,#fff8fa,#fff);
+}
+
+.grade-hero-kicker{
+  margin-bottom:5px;
+  color:var(--maroon);
+  font-size:.68rem;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.grade-hero h2{
+  color:var(--maroon-dark);
+  font-size:1.55rem;
+  letter-spacing:-.035em;
+}
+
+.grade-hero p{
+  margin-top:5px;
+  color:var(--muted);
+}
+
+.grade-hero-student{
+  max-width:260px;
+  padding:9px 13px;
+  overflow:hidden;
+  border:1px solid rgba(130,30,64,.15);
+  border-radius:999px;
+  background:rgba(255,255,255,.76);
+  color:var(--maroon-dark);
+  font-size:.84rem;
+  font-weight:700;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.teacher-grade-hero{
+  background:
+    radial-gradient(circle at 90% 10%,rgba(237,182,77,.24),transparent 26%),
+    linear-gradient(125deg,#faf7ff,#fff);
+}
+
+.grade-toolbar{
+  justify-content:flex-start;
+}
+
+.grade-toolbar select{
+  flex:0 1 370px;
+}
+
+.grade-subject-meta{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  color:#41414d;
+  font-size:.9rem;
+  font-weight:700;
+}
+
+.grade-subject-meta span{
+  color:var(--muted);
+  font-size:.78rem;
+  font-weight:600;
+}
+
+.modal-subtitle{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.84rem;
+}
+
+.form-hint{
+  color:var(--muted);
+  font-size:.76rem;
+  font-weight:500;
+}
+
+.empty-state{
+  padding:36px;
+  text-align:center;
+}
+
+.empty-state h3{
+  color:var(--maroon-dark);
+}
+
+.empty-state p{
+  margin-top:7px;
+  color:var(--muted);
+}
+
+@media(max-width:1000px){
+  .sidebar{
+    width:260px;
+  }
+
+  .main{
+    margin-left:260px;
+    width:calc(100% - 260px);
+  }
+
+  .content{
+    padding:24px;
+  }
+
+  .topbar{
+    padding:0 24px;
+  }
+}
+
+@media(max-width:750px){
+  .sidebar{
+    width:min(82vw,300px);
+    box-shadow:18px 0 45px rgba(25,6,13,.30);
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+  }
+
+  .topbar{
+    height:68px;
+    padding:0 16px;
+  }
+
+  .topbar-kicker,
+  .topbar-date{
+    display:none;
+  }
+
+  .page-title{
+    font-size:1.12rem;
+  }
+
+  #topUser{
+    max-width:130px;
+    min-height:36px;
+    padding-top:7px;
+    padding-bottom:7px;
+  }
+
+  .content{
+    padding:20px 16px 32px;
+  }
+
+  .card,
+  .stat-card{
+    padding:18px;
+    border-radius:14px;
+  }
+
+  .toolbar > *{
+    flex:1 1 100%;
+  }
+
+  .toolbar .primary-btn,
+  .toolbar .secondary-btn{
+    width:100%;
+  }
+
+  .modal{
+    align-items:flex-end;
+    padding:10px;
+  }
+
+  .modal-box{
+    max-height:94vh;
+    padding:22px 18px;
+    border-radius:18px 18px 12px 12px;
+  }
+
+  .modal-actions{
+    flex-wrap:wrap;
+  }
+
+  .modal-actions button{
+    flex:1;
+  }
+
+  .grade-hero{
+    align-items:flex-start;
+    flex-direction:column;
+    padding:22px;
+  }
+
+  .grade-toolbar select{
+    flex-basis:100%;
+  }
+
+  .toast-container{
+    right:14px;
+    bottom:14px;
+    left:14px;
+  }
+
+  .toast{
+    min-width:0;
+    max-width:none;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,
+  *::before,
+  *::after{
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+  }
+}
 </style>
 </head>
 
@@ -680,6 +1568,7 @@ tr:hover td{
           id="loginEmail"
           type="email"
           required
+          autocomplete="email"
           placeholder="Enter your email"
         >
       </div>
@@ -690,6 +1579,7 @@ tr:hover td{
           id="loginPassword"
           type="password"
           required
+          autocomplete="current-password"
           placeholder="Enter your password"
         >
       </div>
@@ -708,7 +1598,6 @@ tr:hover td{
 <!-- APP -->
 <div id="app" class="app hidden">
 
-  <!-- SIDEBAR -->
   <aside id="sidebar" class="sidebar">
 
     <div class="brand">
@@ -739,9 +1628,9 @@ tr:hover td{
       </div>
     </div>
 
-    <nav id="navigation" class="nav"></nav>
+    <nav id="navigation" class="nav" aria-label="Main navigation"></nav>
 
-    <button id="logoutBtn" class="logout">
+    <button id="logoutBtn" class="logout" type="button">
       Logout
     </button>
 
@@ -752,23 +1641,35 @@ tr:hover td{
 
     <header class="topbar">
 
-      <div style="display:flex;align-items:center;gap:12px">
+      <div class="topbar-leading">
 
         <button
           id="mobileMenuBtn"
           class="mobile-menu"
+          type="button"
+          aria-label="Open navigation menu"
+          aria-controls="sidebar"
+          aria-expanded="false"
         >
           ☰
         </button>
 
-        <div id="pageTitle" class="page-title">
-          Dashboard
+        <div class="topbar-title-wrap">
+          <div class="topbar-kicker">
+            Global Academy
+          </div>
+          <div id="pageTitle" class="page-title">
+            Dashboard
+          </div>
         </div>
 
       </div>
 
-      <div id="topUser">
-        User
+      <div class="topbar-actions">
+        <div id="topbarDate" class="topbar-date"></div>
+        <div id="topUser">
+          User
+        </div>
       </div>
 
     </header>
@@ -781,15 +1682,15 @@ tr:hover td{
 
 
 <!-- MODAL -->
-<div id="modal" class="modal hidden">
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Dialog" tabindex="-1">
   <div id="modalBox" class="modal-box"></div>
 </div>
 
-
-<div id="toastContainer" class="toast-container"></div>
+<div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
 
 <script>
+
 /* =========================================================
    SUPABASE
 ========================================================= */
@@ -822,11 +1723,14 @@ const state = {
   subjects:[],
   rooms:[],
   attendance:[],
+  grades:[],
   assignments:[],
   logs:[],
   currentPage:"dashboard",
   selectedStudent:null,
-  currentSession:null
+  selectedGradeSubjectId:null,
+  currentSession:null,
+  lastFocusedElement:null
 };
 
 
@@ -835,6 +1739,7 @@ const state = {
 ========================================================= */
 
 function escapeHTML(value){
+
   if(value === null || value === undefined){
     return "";
   }
@@ -849,6 +1754,7 @@ function escapeHTML(value){
 
 
 function showToast(message,type=""){
+
   const container =
     document.getElementById("toastContainer");
 
@@ -870,51 +1776,134 @@ function showToast(message,type=""){
 
 
 function openModal(html){
-  document.getElementById("modalBox").innerHTML = html;
-  document.getElementById("modal").classList.remove("hidden");
+
+  state.lastFocusedElement =
+    document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+
+  document.getElementById(
+    "modalBox"
+  ).innerHTML = html;
+
+  const modal =
+    document.getElementById(
+      "modal"
+    );
+
+  modal.classList.remove("hidden");
+
+  requestAnimationFrame(()=>{
+
+    const firstInteractive =
+      modal.querySelector(
+        "input,select,textarea,button"
+      );
+
+    (firstInteractive || modal).focus();
+
+  });
 }
 
 
 function closeModal(){
-  document.getElementById("modal").classList.add("hidden");
+
+  document.getElementById(
+    "modal"
+  ).classList.add("hidden");
+
+  const previous =
+    state.lastFocusedElement;
+
+  state.lastFocusedElement = null;
+
+  if(previous?.isConnected){
+    previous.focus();
+  }
 }
 
 
-document.getElementById("modal").addEventListener("click",e=>{
-  if(e.target.id === "modal"){
+document
+  .getElementById("modal")
+  .addEventListener("click",e=>{
+
+    if(e.target.id === "modal"){
+      closeModal();
+    }
+
+  });
+
+
+document.addEventListener("keydown",e=>{
+
+  if(
+    e.key === "Escape" &&
+    !document
+      .getElementById("modal")
+      .classList.contains("hidden")
+  ){
     closeModal();
   }
+
 });
 
 
 function formatDate(value){
+
   if(!value){
     return "-";
   }
 
-  return new Date(value).toLocaleDateString(
-    "en-PH",
-    {
-      year:"numeric",
-      month:"short",
-      day:"numeric"
-    }
-  );
+  return new Date(value)
+    .toLocaleDateString(
+      "en-PH",
+      {
+        year:"numeric",
+        month:"short",
+        day:"numeric"
+      }
+    );
 }
 
 
 function formatTime(value){
+
   if(!value){
     return "-";
   }
 
-  return new Date(value).toLocaleTimeString(
-    "en-PH",
-    {
-      hour:"2-digit",
-      minute:"2-digit"
-    }
-  );
+  return new Date(value)
+    .toLocaleTimeString(
+      "en-PH",
+      {
+        hour:"2-digit",
+        minute:"2-digit"
+      }
+    );
+}
+
+
+function localDateString(value){
+
+  const date =
+    value instanceof Date
+      ? value
+      : new Date(value);
+
+  const year =
+    date.getFullYear();
+
+  const month =
+    String(
+      date.getMonth()+1
+    ).padStart(2,"0");
+
+  const day =
+    String(
+      date.getDate()
+    ).padStart(2,"0");
+
+  return `${year}-${month}-${day}`;
 }
 
 
@@ -924,29 +1913,51 @@ function statusBadge(status){
     String(status || "").toLowerCase();
 
   if(s === "present"){
-    return `<span class="badge badge-present">Present</span>`;
+    return `
+      <span class="badge badge-present">
+        Present
+      </span>
+    `;
   }
 
   if(s === "late"){
-    return `<span class="badge badge-late">Late</span>`;
+    return `
+      <span class="badge badge-late">
+        Late
+      </span>
+    `;
   }
 
   if(s === "absent"){
-    return `<span class="badge badge-absent">Absent</span>`;
+    return `
+      <span class="badge badge-absent">
+        Absent
+      </span>
+    `;
   }
 
   if(
     s === "time out" ||
     s === "timeout"
   ){
-    return `<span class="badge badge-timeout">Time Out</span>`;
+
+    return `
+      <span class="badge badge-timeout">
+        Time Out
+      </span>
+    `;
   }
 
-  return `<span class="badge badge-inactive">${escapeHTML(status || "-")}</span>`;
+  return `
+    <span class="badge badge-inactive">
+      ${escapeHTML(status || "-")}
+    </span>
+  `;
 }
 
 
 function getInitials(name){
+
   if(!name){
     return "GA";
   }
@@ -954,7 +1965,9 @@ function getInitials(name){
   return name
     .split(" ")
     .slice(0,2)
-    .map(x=>x.charAt(0).toUpperCase())
+    .map(
+      x=>x.charAt(0).toUpperCase()
+    )
     .join("");
 }
 
@@ -971,9 +1984,12 @@ function studentPhoto(student){
 
     const {
       data
-    } = db.storage
-      .from("student-photos")
-      .getPublicUrl(student.photo_path);
+    } =
+      db.storage
+        .from("student-photos")
+        .getPublicUrl(
+          student.photo_path
+        );
 
     if(data?.publicUrl){
       return data.publicUrl;
@@ -998,6 +2014,7 @@ function photoHTML(student){
         alt="Student Photo"
         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
       >
+
       <div
         style="
           display:none;
@@ -1012,7 +2029,9 @@ function photoHTML(student){
           font-weight:800;
         "
       >
-        ${escapeHTML(getInitials(student.full_name))}
+        ${escapeHTML(
+          getInitials(student.full_name)
+        )}
       </div>
     `;
   }
@@ -1032,7 +2051,9 @@ function photoHTML(student){
         font-weight:800;
       "
     >
-      ${escapeHTML(getInitials(student.full_name))}
+      ${escapeHTML(
+        getInitials(student.full_name)
+      )}
     </div>
   `;
 }
@@ -1042,7 +2063,10 @@ function photoHTML(student){
    EDGE FUNCTION
 ========================================================= */
 
-async function callFunction(action,payload={}){
+async function callFunction(
+  action,
+  payload={}
+){
 
   const {
     data:{
@@ -1052,7 +2076,9 @@ async function callFunction(action,payload={}){
     await db.auth.getSession();
 
   if(!session){
-    throw new Error("Not authenticated");
+    throw new Error(
+      "Not authenticated"
+    );
   }
 
   const response =
@@ -1061,9 +2087,11 @@ async function callFunction(action,payload={}){
       {
         method:"POST",
         headers:{
-          "Content-Type":"application/json",
+          "Content-Type":
+            "application/json",
           "Authorization":
-            "Bearer " + session.access_token
+            "Bearer " +
+            session.access_token
         },
         body:JSON.stringify({
           action,
@@ -1076,6 +2104,7 @@ async function callFunction(action,payload={}){
     await response.json();
 
   if(!response.ok){
+
     throw new Error(
       result.error ||
       result.message ||
@@ -1093,49 +2122,57 @@ async function callFunction(action,payload={}){
 
 document
   .getElementById("loginForm")
-  .addEventListener("submit",async e=>{
+  .addEventListener(
+    "submit",
+    async e=>{
 
-    e.preventDefault();
+      e.preventDefault();
 
-    const email =
-      document.getElementById("loginEmail").value.trim();
+      const email =
+        document
+          .getElementById("loginEmail")
+          .value
+          .trim();
 
-    const password =
-      document.getElementById("loginPassword").value;
+      const password =
+        document
+          .getElementById("loginPassword")
+          .value;
 
-    try{
+      try{
 
-      const {
-        data,
-        error
-      } =
-        await db.auth.signInWithPassword({
-          email,
-          password
-        });
+        const {
+          data,
+          error
+        } =
+          await db.auth.signInWithPassword({
+            email,
+            password
+          });
 
-      if(error){
-        throw error;
+        if(error){
+          throw error;
+        }
+
+        state.user =
+          data.user;
+
+        await loadUser();
+
+        showApp();
+
+      }catch(error){
+
+        console.error(error);
+
+        showToast(
+          error.message ||
+          "Login failed",
+          "error"
+        );
       }
-
-      state.user =
-        data.user;
-
-      await loadUser();
-
-      showApp();
-
-    }catch(error){
-
-      console.error(error);
-
-      showToast(
-        error.message ||
-        "Login failed",
-        "error"
-      );
     }
-  });
+  );
 
 
 async function loadUser(){
@@ -1212,7 +2249,6 @@ async function checkSession(){
       console.error(error);
 
       await db.auth.signOut();
-
     }
   }
 }
@@ -1224,8 +2260,13 @@ db.auth.onAuthStateChange(
     if(
       event === "SIGNED_OUT"
     ){
+
+      state.user = null;
+      state.profile = null;
+
       showLogin();
     }
+
   }
 );
 
@@ -1267,7 +2308,9 @@ function showApp(){
 function buildNavigation(){
 
   const nav =
-    document.getElementById("navigation");
+    document.getElementById(
+      "navigation"
+    );
 
   const role =
     state.profile.role;
@@ -1277,13 +2320,18 @@ function buildNavigation(){
   if(role === "admin"){
 
     html += `
-      <div class="nav-section">Overview</div>
+
+      <div class="nav-section">
+        Overview
+      </div>
 
       <button onclick="loadPage('dashboard')">
         Dashboard
       </button>
 
-      <div class="nav-section">Management</div>
+      <div class="nav-section">
+        Management
+      </div>
 
       <button onclick="loadPage('students')">
         Student Records
@@ -1305,7 +2353,13 @@ function buildNavigation(){
         Teacher Assignments
       </button>
 
-      <div class="nav-section">Attendance</div>
+      <button onclick="loadPage('grades')">
+        Student Grades
+      </button>
+
+      <div class="nav-section">
+        Attendance
+      </div>
 
       <button onclick="loadPage('attendance')">
         Attendance Monitoring
@@ -1315,14 +2369,12 @@ function buildNavigation(){
         Reports
       </button>
 
-      <div class="nav-section">System</div>
+      <div class="nav-section">
+        System
+      </div>
 
       <button onclick="loadPage('logs')">
         Activity Log
-      </button>
-
-      <button onclick="loadPage('settings')">
-        System Settings
       </button>
     `;
   }
@@ -1330,7 +2382,10 @@ function buildNavigation(){
   else if(role === "teacher"){
 
     html += `
-      <div class="nav-section">Teacher</div>
+
+      <div class="nav-section">
+        Teacher
+      </div>
 
       <button onclick="loadPage('dashboard')">
         Dashboard
@@ -1348,6 +2403,10 @@ function buildNavigation(){
         Students
       </button>
 
+      <button onclick="loadPage('grades')">
+        Gradebook
+      </button>
+
       <button onclick="loadPage('reports')">
         Reports
       </button>
@@ -1357,7 +2416,10 @@ function buildNavigation(){
   else if(role === "student"){
 
     html += `
-      <div class="nav-section">Student</div>
+
+      <div class="nav-section">
+        Student
+      </div>
 
       <button onclick="loadPage('dashboard')">
         Dashboard
@@ -1371,6 +2433,10 @@ function buildNavigation(){
         My Attendance
       </button>
 
+      <button onclick="loadPage('grades')">
+        My Grades
+      </button>
+
       <button onclick="loadPage('mySubjects')">
         My Subjects
       </button>
@@ -1379,6 +2445,67 @@ function buildNavigation(){
 
   nav.innerHTML =
     html;
+
+  updateActiveNavigation();
+}
+
+
+function updateActiveNavigation(page=state.currentPage){
+
+  document
+    .querySelectorAll(
+      "#navigation button[onclick]"
+    )
+    .forEach(button=>{
+
+      const match =
+        button
+          .getAttribute("onclick")
+          ?.match(/loadPage\('([^']+)'\)/);
+
+      const isActive =
+        match?.[1] === page;
+
+      button
+        .classList
+        .toggle("active",isActive);
+
+      if(isActive){
+        button.setAttribute(
+          "aria-current",
+          "page"
+        );
+      }else{
+        button.removeAttribute(
+          "aria-current"
+        );
+      }
+
+    });
+}
+
+
+function updateTopbarDate(){
+
+  const element =
+    document.getElementById(
+      "topbarDate"
+    );
+
+  if(!element){
+    return;
+  }
+
+  element.textContent =
+    new Intl.DateTimeFormat(
+      "en-PH",
+      {
+        weekday:"short",
+        month:"short",
+        day:"numeric",
+        year:"numeric"
+      }
+    ).format(new Date());
 }
 
 
@@ -1395,7 +2522,15 @@ async function loadPage(page){
     .getElementById("sidebar")
     .classList.remove("open");
 
+  document
+    .getElementById("mobileMenuBtn")
+    .setAttribute("aria-expanded","false");
+
+  updateActiveNavigation(page);
+  updateTopbarDate();
+
   const titleMap = {
+
     dashboard:"Dashboard",
     students:"Student Records",
     teachers:"Teacher Accounts",
@@ -1405,18 +2540,25 @@ async function loadPage(page){
     attendance:"Attendance Monitoring",
     reports:"Reports",
     logs:"Activity Log",
-    settings:"System Settings",
+    grades:
+      state.profile?.role === "teacher"
+        ? "Gradebook"
+        : state.profile?.role === "student"
+          ? "My Grades"
+          : "Student Grades",
     mySubjects:"My Subjects",
     teacherAttendance:"Class Attendance",
     teacherStudents:"Students",
     profile:"My Profile",
     studentAttendance:"My Attendance"
+
   };
 
   document.getElementById(
     "pageTitle"
   ).textContent =
-    titleMap[page] || "Dashboard";
+    titleMap[page] ||
+    "Dashboard";
 
   try{
 
@@ -1458,8 +2600,8 @@ async function loadPage(page){
         await renderLogs();
         break;
 
-      case "settings":
-        await renderSettings();
+      case "grades":
+        await renderGrades();
         break;
 
       case "mySubjects":
@@ -1493,11 +2635,24 @@ async function loadPage(page){
     document.getElementById(
       "content"
     ).innerHTML = `
+
       <div class="card">
-        <h3>Unable to load this page</h3>
-        <p style="color:var(--red);margin-top:10px">
-          ${escapeHTML(error.message)}
+
+        <h3>
+          Unable to load this page
+        </h3>
+
+        <p
+          style="
+            color:var(--red);
+            margin-top:10px
+          "
+        >
+          ${escapeHTML(
+            error.message
+          )}
         </p>
+
       </div>
     `;
   }
@@ -1596,6 +2751,61 @@ async function loadRooms(){
 }
 
 
+/* =========================================================
+   GRADES LOADER
+========================================================= */
+
+async function loadGrades(){
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("student_grades")
+      .select(`
+        *,
+        students (
+          id,
+          student_id_number,
+          full_name,
+          course_section
+        ),
+        subjects (
+          id,
+          subject_code,
+          subject_name,
+          course_section,
+          school_year,
+          semester
+        )
+      `)
+      .order(
+        "updated_at",
+        {ascending:false}
+      );
+
+  if(error){
+
+    if(
+      error.code === "42P01" ||
+      error.code === "PGRST205"
+    ){
+      throw new Error(
+        "Grades setup is required. Run student_grades_setup.sql in Supabase first."
+      );
+    }
+
+    throw error;
+  }
+
+  state.grades =
+    data || [];
+
+  return state.grades;
+}
+
+
 async function loadAttendance(){
 
   const {
@@ -1618,7 +2828,10 @@ async function loadAttendance(){
           subject_name
         )
       `)
-      .order("timestamp",{ascending:false});
+      .order(
+        "timestamp",
+        {ascending:false}
+      );
 
   if(error){
     throw error;
@@ -1628,6 +2841,70 @@ async function loadAttendance(){
     data || [];
 
   return state.attendance;
+}
+
+
+/* =========================================================
+   TEACHER ASSIGNMENTS LOADER
+========================================================= */
+
+async function loadTeacherAssignments(){
+
+  await loadTeachers();
+
+  const teacher =
+    state.teachers.find(
+      t =>
+        t.auth_user_id ===
+        state.user.id
+    );
+
+  if(!teacher){
+    return [];
+  }
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("teacher_subjects")
+      .select(`
+        id,
+        teacher_id,
+        subject_id,
+        room_id,
+        created_at,
+        subjects (
+          id,
+          subject_code,
+          subject_name,
+          course_section,
+          school_year,
+          semester
+        ),
+        rooms (
+          id,
+          room_name,
+          room_code,
+          reader_id,
+          status
+        )
+      `)
+      .eq(
+        "teacher_id",
+        teacher.id
+      )
+      .order(
+        "created_at",
+        {ascending:false}
+      );
+
+  if(error){
+    throw error;
+  }
+
+  return data || [];
 }
 
 
@@ -1667,37 +2944,44 @@ async function renderAdminDashboard(){
     loadAttendance()
   ]);
 
-  const today =
-    new Date();
-
   const todayString =
-    today.toISOString().slice(0,10);
+    localDateString(
+      new Date()
+    );
 
   const todayAttendance =
-    state.attendance.filter(row=>{
-      return String(row.timestamp)
-        .slice(0,10) === todayString;
-    });
+    state.attendance.filter(
+      row =>
+        localDateString(
+          row.timestamp
+        ) === todayString
+    );
 
   const present =
     todayAttendance.filter(
-      x=>x.status === "Present"
+      x =>
+        x.status === "Present"
     ).length;
 
   const late =
     todayAttendance.filter(
-      x=>x.status === "Late"
+      x =>
+        x.status === "Late"
     ).length;
 
   const activeRooms =
     state.rooms.filter(
-      x=>x.status === "active"
+      x =>
+        x.status === "active"
     ).length;
 
   const rate =
     state.students.length
       ? Math.round(
-          (present / state.students.length) * 100
+          (
+            present /
+            state.students.length
+          ) * 100
         )
       : 0;
 
@@ -1721,9 +3005,13 @@ async function renderAdminDashboard(){
           Active Teachers
         </div>
         <div class="stat-value">
-          ${state.teachers.filter(
-            t=>t.status !== "inactive"
-          ).length}
+          ${
+            state.teachers.filter(
+              t =>
+                t.status !==
+                "inactive"
+            ).length
+          }
         </div>
       </div>
 
@@ -1780,14 +3068,20 @@ async function renderAdminDashboard(){
     </div>
 
 
-    <div class="card" style="margin-top:20px">
+    <div
+      class="card"
+      style="margin-top:20px"
+    >
 
       <div class="card-title">
         Recent Attendance
       </div>
 
       ${attendanceTableHTML(
-        state.attendance.slice(0,10)
+        state.attendance.slice(
+          0,
+          10
+        )
       )}
 
     </div>
@@ -1802,6 +3096,7 @@ async function renderAdminDashboard(){
 async function renderTeacherDashboard(){
 
   await Promise.all([
+    loadTeachers(),
     loadStudents(),
     loadSubjects(),
     loadRooms(),
@@ -1810,27 +3105,38 @@ async function renderTeacherDashboard(){
 
   const myTeacher =
     state.teachers.find(
-      x=>x.auth_user_id === state.user.id
+      x =>
+        x.auth_user_id ===
+        state.user.id
     );
 
   const teacherId =
     myTeacher?.id;
 
+  const assignments =
+    teacherId
+      ? await loadTeacherAssignments()
+      : [];
+
   const today =
-    new Date()
-      .toISOString()
-      .slice(0,10);
+    localDateString(
+      new Date()
+    );
 
   const records =
-    state.attendance.filter(row=>{
+    state.attendance.filter(
+      row => {
 
-      return (
-        String(row.timestamp)
-          .slice(0,10) === today &&
-        row.teacher_id === teacherId
-      );
+        return (
+          localDateString(
+            row.timestamp
+          ) === today &&
+          row.teacher_id ===
+          teacherId
+        );
 
-    });
+      }
+    );
 
   document.getElementById(
     "content"
@@ -1843,9 +3149,13 @@ async function renderTeacherDashboard(){
           Students Present
         </div>
         <div class="stat-value">
-          ${records.filter(
-            x=>x.status==="Present"
-          ).length}
+          ${
+            records.filter(
+              x =>
+                x.status ===
+                "Present"
+            ).length
+          }
         </div>
       </div>
 
@@ -1854,9 +3164,13 @@ async function renderTeacherDashboard(){
           Students Late
         </div>
         <div class="stat-value">
-          ${records.filter(
-            x=>x.status==="Late"
-          ).length}
+          ${
+            records.filter(
+              x =>
+                x.status ===
+                "Late"
+            ).length
+          }
         </div>
       </div>
 
@@ -1865,9 +3179,13 @@ async function renderTeacherDashboard(){
           Time-Out Records
         </div>
         <div class="stat-value">
-          ${records.filter(
-            x=>x.status==="Time Out"
-          ).length}
+          ${
+            records.filter(
+              x =>
+                x.status ===
+                "Time Out"
+            ).length
+          }
         </div>
       </div>
 
@@ -1876,7 +3194,7 @@ async function renderTeacherDashboard(){
           My Classes
         </div>
         <div class="stat-value">
-          ${state.subjects.length}
+          ${assignments.length}
         </div>
       </div>
 
@@ -1901,7 +3219,12 @@ async function renderTeacherDashboard(){
             Ready for RFID Scan
           </div>
 
-          <p style="margin-top:10px;color:var(--muted)">
+          <p
+            style="
+              margin-top:10px;
+              color:var(--muted)
+            "
+          >
             Scan a registered student RFID card.
           </p>
 
@@ -1921,41 +3244,128 @@ async function renderTeacherDashboard(){
       <div class="card">
 
         <div class="card-title">
-          Recent Attendance
+          My Assigned Classes
         </div>
 
         <ul class="recent-list">
 
           ${
-            records
-              .slice(0,8)
-              .map(row=>`
+            assignments.length
+            ? assignments
+                .slice(0,8)
+                .map(
+                  a => `
 
-                <li>
+                    <li>
 
-                  <strong>
-                    ${escapeHTML(
-                      row.students?.full_name ||
-                      "Unknown Student"
-                    )}
-                  </strong>
+                      <strong>
+                        ${escapeHTML(
+                          a.subjects?.subject_code ||
+                          "-"
+                        )}
+                      </strong>
 
-                  <div style="margin-top:5px">
-                    ${statusBadge(row.status)}
-                    <span style="color:var(--muted);margin-left:8px">
-                      ${formatTime(row.timestamp)}
-                    </span>
-                  </div>
+                      <div
+                        style="
+                          margin-top:5px;
+                          color:var(--muted)
+                        "
+                      >
+                        ${escapeHTML(
+                          a.subjects?.subject_name ||
+                          "-"
+                        )}
+                      </div>
 
-                </li>
+                      <div
+                        style="
+                          margin-top:5px;
+                          color:var(--muted)
+                        "
+                      >
+                        Room:
+                        ${escapeHTML(
+                          a.rooms?.room_name ||
+                          "-"
+                        )}
+                      </div>
 
-              `)
-              .join("")
+                    </li>
+                  `
+                )
+                .join("")
+            : `
+              <li>
+                No subjects assigned.
+              </li>
+            `
           }
 
         </ul>
 
       </div>
+
+    </div>
+
+
+    <div
+      class="card"
+      style="margin-top:20px"
+    >
+
+      <div class="card-title">
+        Recent Attendance
+      </div>
+
+      <ul class="recent-list">
+
+        ${
+          records.length
+          ? records
+              .slice(0,8)
+              .map(
+                row => `
+
+                  <li>
+
+                    <strong>
+                      ${escapeHTML(
+                        row.students?.full_name ||
+                        "Unknown Student"
+                      )}
+                    </strong>
+
+                    <div
+                      style="margin-top:5px"
+                    >
+                      ${statusBadge(
+                        row.status
+                      )}
+
+                      <span
+                        style="
+                          color:var(--muted);
+                          margin-left:8px
+                        "
+                      >
+                        ${formatTime(
+                          row.timestamp
+                        )}
+                      </span>
+                    </div>
+
+                  </li>
+                `
+              )
+              .join("")
+          : `
+            <li>
+              No attendance records today.
+            </li>
+          `
+        }
+
+      </ul>
 
     </div>
   `;
@@ -1976,11 +3386,22 @@ async function renderStudentDashboard(){
     document.getElementById(
       "content"
     ).innerHTML = `
+
       <div class="card">
-        <h3>Student profile not found</h3>
-        <p style="margin-top:10px;color:var(--muted)">
+
+        <h3>
+          Student profile not found
+        </h3>
+
+        <p
+          style="
+            margin-top:10px;
+            color:var(--muted)
+          "
+        >
           Your account is not linked to a student record.
         </p>
+
       </div>
     `;
 
@@ -1991,23 +3412,30 @@ async function renderStudentDashboard(){
 
   const records =
     state.attendance.filter(
-      x=>x.student_id === student.id
+      x =>
+        x.student_id ===
+        student.id
     );
 
   const present =
     records.filter(
-      x=>x.status==="Present"
+      x =>
+        x.status === "Present"
     ).length;
 
   const late =
     records.filter(
-      x=>x.status==="Late"
+      x =>
+        x.status === "Late"
     ).length;
 
   const rate =
     records.length
       ? Math.round(
-          ((present + late) / records.length) * 100
+          (
+            (present + late) /
+            records.length
+          ) * 100
         )
       : 0;
 
@@ -2024,13 +3452,19 @@ async function renderStudentDashboard(){
         <div>
 
           <div class="profile-name">
-            ${escapeHTML(student.full_name)}
+            ${escapeHTML(
+              student.full_name
+            )}
           </div>
 
           <div class="profile-meta">
-            ${escapeHTML(student.student_id_number)}
+            ${escapeHTML(
+              student.student_id_number
+            )}
             ·
-            ${escapeHTML(student.course_section)}
+            ${escapeHTML(
+              student.course_section
+            )}
           </div>
 
         </div>
@@ -2040,7 +3474,10 @@ async function renderStudentDashboard(){
     </div>
 
 
-    <div class="stats-grid" style="margin-top:20px">
+    <div
+      class="stats-grid"
+      style="margin-top:20px"
+    >
 
       <div class="stat-card">
         <div class="stat-label">
@@ -2105,7 +3542,10 @@ async function getCurrentStudent(){
     await db
       .from("students")
       .select("*")
-      .eq("auth_user_id",state.user.id)
+      .eq(
+        "auth_user_id",
+        state.user.id
+      )
       .maybeSingle();
 
   if(error){
@@ -2148,7 +3588,9 @@ async function renderStudents(){
       </div>
 
       <div id="studentTable">
-        ${studentTableHTML(state.students)}
+        ${studentTableHTML(
+          state.students
+        )}
       </div>
 
     </div>
@@ -2165,6 +3607,7 @@ function studentTableHTML(students){
       <table>
 
         <thead>
+
           <tr>
             <th>Student ID</th>
             <th>Name</th>
@@ -2173,87 +3616,98 @@ function studentTableHTML(students){
             <th>Account</th>
             <th>Actions</th>
           </tr>
+
         </thead>
 
         <tbody>
 
           ${
             students.length
-            ? students.map(student=>`
+            ? students.map(
+                student => `
 
-              <tr>
+                  <tr>
 
-                <td>
-                  ${escapeHTML(
-                    student.student_id_number
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        student.student_id_number
+                      )}
+                    </td>
 
-                <td>
-                  <strong>
-                    ${escapeHTML(
-                      student.full_name
-                    )}
-                  </strong>
-                </td>
+                    <td>
+                      <strong>
+                        ${escapeHTML(
+                          student.full_name
+                        )}
+                      </strong>
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    student.course_section
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        student.course_section
+                      )}
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    student.rfid_uid
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        student.rfid_uid
+                      )}
+                    </td>
 
-                <td>
+                    <td>
 
-                  ${
-                    student.auth_user_id
-                    ? `<span class="badge badge-active">Linked</span>`
-                    : `<span class="badge badge-inactive">No Login</span>`
-                  }
+                      ${
+                        student.auth_user_id
+                        ? `
+                          <span class="badge badge-active">
+                            Linked
+                          </span>
+                        `
+                        : `
+                          <span class="badge badge-inactive">
+                            No Login
+                          </span>
+                        `
+                      }
 
-                </td>
+                    </td>
 
-                <td>
+                    <td>
 
-                  <button
-                    class="secondary-btn small-btn"
-                    onclick="viewStudent('${student.id}')"
-                  >
-                    View
-                  </button>
-
-                  <button
-                    class="secondary-btn small-btn"
-                    onclick="editStudent('${student.id}')"
-                  >
-                    Edit
-                  </button>
-
-                  ${
-                    student.auth_user_id
-                    ? `
                       <button
-                        class="danger-btn small-btn"
-                        onclick="deleteStudentLogin('${student.id}')"
+                        class="secondary-btn small-btn"
+                        onclick="viewStudent('${student.id}')"
                       >
-                        Delete Login
+                        View
                       </button>
-                    `
-                    : ""
-                  }
 
-                </td>
+                      <button
+                        class="secondary-btn small-btn"
+                        onclick="editStudent('${student.id}')"
+                      >
+                        Edit
+                      </button>
 
-              </tr>
+                      ${
+                        student.auth_user_id
+                        ? `
+                          <button
+                            class="danger-btn small-btn"
+                            onclick="deleteStudentLogin('${student.id}')"
+                          >
+                            Delete Login
+                          </button>
+                        `
+                        : ""
+                      }
 
-            `).join("")
+                    </td>
+
+                  </tr>
+                `
+              ).join("")
             : `
+
               <tr>
                 <td colspan="6">
                   No students found.
@@ -2275,29 +3729,35 @@ function filterStudents(){
 
   const q =
     document
-      .getElementById("studentSearch")
+      .getElementById(
+        "studentSearch"
+      )
       .value
       .toLowerCase();
 
   const filtered =
-    state.students.filter(student=>{
+    state.students.filter(
+      student => {
 
-      return [
-        student.student_id_number,
-        student.full_name,
-        student.course_section,
-        student.rfid_uid
-      ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q);
+        return [
+          student.student_id_number,
+          student.full_name,
+          student.course_section,
+          student.rfid_uid
+        ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q);
 
-    });
+      }
+    );
 
   document.getElementById(
     "studentTable"
   ).innerHTML =
-    studentTableHTML(filtered);
+    studentTableHTML(
+      filtered
+    );
 }
 
 
@@ -2361,28 +3821,38 @@ function openStudentModal(){
 
       <div class="form-group">
         <label>Student Photo</label>
+
         <input
           id="studentPhoto"
           type="file"
           accept="image/jpeg,image/png,image/webp"
         >
-        <small style="color:var(--muted)">
+
+        <small
+          style="color:var(--muted)"
+        >
           JPG, PNG or WebP. Maximum 3 MB.
         </small>
+
       </div>
 
 
-      <div style="
-        border-top:1px solid var(--border);
-        padding-top:18px;
-        margin-top:20px
-      ">
+      <div
+        style="
+          border-top:1px solid var(--border);
+          padding-top:18px;
+          margin-top:20px
+        "
+      >
 
         <strong>
           Student Account
         </strong>
 
-        <div class="form-group" style="margin-top:15px">
+        <div
+          class="form-group"
+          style="margin-top:15px"
+        >
 
           <label>
             Student Email
@@ -2454,37 +3924,49 @@ async function createStudent(e){
 
     const studentIdNumber =
       document
-        .getElementById("studentIdNumber")
+        .getElementById(
+          "studentIdNumber"
+        )
         .value
         .trim();
 
     const fullName =
       document
-        .getElementById("studentFullName")
+        .getElementById(
+          "studentFullName"
+        )
         .value
         .trim();
 
     const courseSection =
       document
-        .getElementById("studentSection")
+        .getElementById(
+          "studentSection"
+        )
         .value
         .trim();
 
     const rfidUid =
       document
-        .getElementById("studentRFID")
+        .getElementById(
+          "studentRFID"
+        )
         .value
         .trim();
 
     const email =
       document
-        .getElementById("studentEmail")
+        .getElementById(
+          "studentEmail"
+        )
         .value
         .trim();
 
     const password =
       document
-        .getElementById("studentPassword")
+        .getElementById(
+          "studentPassword"
+        )
         .value;
 
     let photoPath =
@@ -2493,13 +3975,19 @@ async function createStudent(e){
 
     const file =
       document
-        .getElementById("studentPhoto")
+        .getElementById(
+          "studentPhoto"
+        )
         .files[0];
 
 
     if(file){
 
-      if(file.size > 3 * 1024 * 1024){
+      if(
+        file.size >
+        3 * 1024 * 1024
+      ){
+
         throw new Error(
           "Student photo must be 3 MB or smaller."
         );
@@ -2558,27 +4046,33 @@ async function createStudent(e){
         result.id ||
         result.user_id ||
         null;
-
     }
 
 
     const {
-      data,
       error
     } =
       await db
         .from("students")
         .insert({
-          student_id_number:studentIdNumber,
-          full_name:fullName,
-          rfid_uid:rfidUid,
-          course_section:courseSection,
-          auth_user_id:authUserId,
-          photo_path:photoPath
-        })
-        .select()
-        .single();
+          student_id_number:
+            studentIdNumber,
 
+          full_name:
+            fullName,
+
+          rfid_uid:
+            rfidUid,
+
+          course_section:
+            courseSection,
+
+          auth_user_id:
+            authUserId,
+
+          photo_path:
+            photoPath
+        });
 
     if(error){
       throw error;
@@ -2587,7 +4081,8 @@ async function createStudent(e){
 
     await logActivity(
       "ADD_STUDENT",
-      "Added student " + fullName
+      "Added student " +
+      fullName
     );
 
 
@@ -2620,7 +4115,8 @@ async function viewStudent(id){
 
   const student =
     state.students.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!student){
@@ -2631,12 +4127,13 @@ async function viewStudent(id){
 
   const records =
     state.attendance.filter(
-      x=>x.student_id === id
+      x =>
+        x.student_id === id
     );
 
   const attended =
     records.filter(
-      x=>
+      x =>
         x.status === "Present" ||
         x.status === "Late"
     ).length;
@@ -2644,7 +4141,9 @@ async function viewStudent(id){
   const rate =
     records.length
       ? Math.round(
-          attended / records.length * 100
+          attended /
+          records.length *
+          100
         )
       : 0;
 
@@ -2674,15 +4173,21 @@ async function viewStudent(id){
       <div>
 
         <div class="profile-name">
-          ${escapeHTML(student.full_name)}
+          ${escapeHTML(
+            student.full_name
+          )}
         </div>
 
         <div class="profile-meta">
-          ${escapeHTML(student.student_id_number)}
+          ${escapeHTML(
+            student.student_id_number
+          )}
         </div>
 
         <div class="profile-meta">
-          ${escapeHTML(student.course_section)}
+          ${escapeHTML(
+            student.course_section
+          )}
         </div>
 
       </div>
@@ -2693,30 +4198,41 @@ async function viewStudent(id){
     <div class="stats-grid">
 
       <div class="stat-card">
+
         <div class="stat-label">
           Attendance Records
         </div>
+
         <div class="stat-value">
           ${records.length}
         </div>
+
       </div>
 
+
       <div class="stat-card">
+
         <div class="stat-label">
           Present / Late
         </div>
+
         <div class="stat-value">
           ${attended}
         </div>
+
       </div>
 
+
       <div class="stat-card">
+
         <div class="stat-label">
           Attendance Rate
         </div>
+
         <div class="stat-value">
           ${rate}%
         </div>
+
       </div>
 
     </div>
@@ -2729,13 +4245,18 @@ async function viewStudent(id){
       </div>
 
       <p>
-        ${escapeHTML(student.rfid_uid)}
+        ${escapeHTML(
+          student.rfid_uid
+        )}
       </p>
 
     </div>
 
 
-    <div class="card" style="margin-top:15px">
+    <div
+      class="card"
+      style="margin-top:15px"
+    >
 
       <div class="card-title">
         Attendance History
@@ -2759,7 +4280,8 @@ function editStudent(id){
 
   const student =
     state.students.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!student){
@@ -2788,49 +4310,87 @@ function editStudent(id){
     <form id="editStudentForm">
 
       <div class="form-group">
-        <label>Student ID Number</label>
+
+        <label>
+          Student ID Number
+        </label>
+
         <input
           id="editStudentId"
-          value="${escapeHTML(student.student_id_number)}"
+          value="${escapeHTML(
+            student.student_id_number
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Full Name</label>
+
+        <label>
+          Full Name
+        </label>
+
         <input
           id="editStudentName"
-          value="${escapeHTML(student.full_name)}"
+          value="${escapeHTML(
+            student.full_name
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Course and Section</label>
+
+        <label>
+          Course and Section
+        </label>
+
         <input
           id="editStudentSection"
-          value="${escapeHTML(student.course_section)}"
+          value="${escapeHTML(
+            student.course_section
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>RFID UID</label>
+
+        <label>
+          RFID UID
+        </label>
+
         <input
           id="editStudentRFID"
-          value="${escapeHTML(student.rfid_uid)}"
+          value="${escapeHTML(
+            student.rfid_uid
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Change Photo</label>
+
+        <label>
+          Change Photo
+        </label>
+
         <input
           id="editStudentPhoto"
           type="file"
           accept="image/jpeg,image/png,image/webp"
         >
+
       </div>
+
 
       <div class="modal-actions">
 
@@ -2856,7 +4416,9 @@ function editStudent(id){
 
 
   document
-    .getElementById("editStudentForm")
+    .getElementById(
+      "editStudentForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -2866,25 +4428,39 @@ function editStudent(id){
         try{
 
           const updates = {
+
             student_id_number:
-              document.getElementById(
-                "editStudentId"
-              ).value.trim(),
+              document
+                .getElementById(
+                  "editStudentId"
+                )
+                .value
+                .trim(),
 
             full_name:
-              document.getElementById(
-                "editStudentName"
-              ).value.trim(),
+              document
+                .getElementById(
+                  "editStudentName"
+                )
+                .value
+                .trim(),
 
             course_section:
-              document.getElementById(
-                "editStudentSection"
-              ).value.trim(),
+              document
+                .getElementById(
+                  "editStudentSection"
+                )
+                .value
+                .trim(),
 
             rfid_uid:
-              document.getElementById(
-                "editStudentRFID"
-              ).value.trim()
+              document
+                .getElementById(
+                  "editStudentRFID"
+                )
+                .value
+                .trim()
+
           };
 
 
@@ -2898,7 +4474,11 @@ function editStudent(id){
 
           if(file){
 
-            if(file.size > 3 * 1024 * 1024){
+            if(
+              file.size >
+              3 * 1024 * 1024
+            ){
+
               throw new Error(
                 "Photo must be 3 MB or smaller."
               );
@@ -2944,7 +4524,6 @@ function editStudent(id){
               .update(updates)
               .eq("id",id);
 
-
           if(error){
             throw error;
           }
@@ -2988,7 +4567,8 @@ async function deleteStudentLogin(id){
 
   const student =
     state.students.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!student?.auth_user_id){
@@ -3010,7 +4590,8 @@ async function deleteStudentLogin(id){
     await callFunction(
       "delete_student_login",
       {
-        user_id:student.auth_user_id
+        user_id:
+          student.auth_user_id
       }
     );
 
@@ -3023,8 +4604,10 @@ async function deleteStudentLogin(id){
         .update({
           auth_user_id:null
         })
-        .eq("id",id);
-
+        .eq(
+          "id",
+          id
+        );
 
     if(error){
       throw error;
@@ -3089,7 +4672,9 @@ async function renderTeachers(){
       </div>
 
       <div id="teacherTable">
-        ${teacherTableHTML(state.teachers)}
+        ${teacherTableHTML(
+          state.teachers
+        )}
       </div>
 
     </div>
@@ -3121,65 +4706,79 @@ function teacherTableHTML(teachers){
 
           ${
             teachers.length
-            ? teachers.map(teacher=>`
+            ? teachers.map(
+                teacher => `
 
-              <tr>
+                  <tr>
 
-                <td>
-                  ${escapeHTML(
-                    teacher.teacher_id
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        teacher.teacher_id
+                      )}
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    teacher.name
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        teacher.name
+                      )}
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    teacher.email
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        teacher.email
+                      )}
+                    </td>
 
-                <td>
+                    <td>
 
-                  ${
-                    teacher.status === "inactive"
-                    ? `<span class="badge badge-inactive">Inactive</span>`
-                    : `<span class="badge badge-active">Active</span>`
-                  }
+                      ${
+                        teacher.status ===
+                        "inactive"
 
-                </td>
+                        ? `
+                          <span class="badge badge-inactive">
+                            Inactive
+                          </span>
+                        `
 
-                <td>
+                        : `
+                          <span class="badge badge-active">
+                            Active
+                          </span>
+                        `
+                      }
 
-                  <button
-                    class="secondary-btn small-btn"
-                    onclick="editTeacher('${teacher.id}')"
-                  >
-                    Edit
-                  </button>
+                    </td>
 
-                  <button
-                    class="danger-btn small-btn"
-                    onclick="deleteTeacher('${teacher.id}')"
-                  >
-                    Delete
-                  </button>
+                    <td>
 
-                </td>
+                      <button
+                        class="secondary-btn small-btn"
+                        onclick="editTeacher('${teacher.id}')"
+                      >
+                        Edit
+                      </button>
 
-              </tr>
+                      <button
+                        class="danger-btn small-btn"
+                        onclick="deleteTeacher('${teacher.id}')"
+                      >
+                        Delete
+                      </button>
 
-            `).join("")
+                    </td>
+
+                  </tr>
+                `
+              ).join("")
             : `
+
               <tr>
                 <td colspan="5">
                   No teachers found.
                 </td>
               </tr>
+
             `
           }
 
@@ -3196,26 +4795,31 @@ function filterTeachers(){
 
   const q =
     document
-      .getElementById("teacherSearch")
+      .getElementById(
+        "teacherSearch"
+      )
       .value
       .toLowerCase();
 
   const filtered =
-    state.teachers.filter(t=>
-      [
-        t.teacher_id,
-        t.name,
-        t.email
-      ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q)
+    state.teachers.filter(
+      t =>
+        [
+          t.teacher_id,
+          t.name,
+          t.email
+        ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
     );
 
   document.getElementById(
     "teacherTable"
   ).innerHTML =
-    teacherTableHTML(filtered);
+    teacherTableHTML(
+      filtered
+    );
 }
 
 
@@ -3242,38 +4846,62 @@ function openTeacherModal(){
     <form id="teacherForm">
 
       <div class="form-group">
-        <label>Teacher ID</label>
+
+        <label>
+          Teacher ID
+        </label>
+
         <input
           id="teacherId"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Full Name</label>
+
+        <label>
+          Full Name
+        </label>
+
         <input
           id="teacherName"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Email</label>
+
+        <label>
+          Email
+        </label>
+
         <input
           id="teacherEmail"
           type="email"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Password</label>
+
+        <label>
+          Password
+        </label>
+
         <input
           id="teacherPassword"
           type="password"
           required
         >
+
       </div>
+
 
       <div class="modal-actions">
 
@@ -3299,7 +4927,9 @@ function openTeacherModal(){
 
 
   document
-    .getElementById("teacherForm")
+    .getElementById(
+      "teacherForm"
+    )
     .addEventListener(
       "submit",
       createTeacher
@@ -3315,22 +4945,33 @@ async function createTeacher(e){
 
     const teacherId =
       document
-        .getElementById("teacherId")
-        .value.trim();
+        .getElementById(
+          "teacherId"
+        )
+        .value
+        .trim();
 
     const name =
       document
-        .getElementById("teacherName")
-        .value.trim();
+        .getElementById(
+          "teacherName"
+        )
+        .value
+        .trim();
 
     const email =
       document
-        .getElementById("teacherEmail")
-        .value.trim();
+        .getElementById(
+          "teacherEmail"
+        )
+        .value
+        .trim();
 
     const password =
       document
-        .getElementById("teacherPassword")
+        .getElementById(
+          "teacherPassword"
+        )
         .value;
 
 
@@ -3352,6 +4993,7 @@ async function createTeacher(e){
 
 
     if(!authUserId){
+
       throw new Error(
         "Teacher account was created but no user ID was returned."
       );
@@ -3364,13 +5006,19 @@ async function createTeacher(e){
       await db
         .from("teachers")
         .insert({
-          auth_user_id:authUserId,
-          teacher_id:teacherId,
-          name,
-          email,
-          status:"active"
-        });
+          auth_user_id:
+            authUserId,
 
+          teacher_id:
+            teacherId,
+
+          name,
+
+          email,
+
+          status:
+            "active"
+        });
 
     if(error){
       throw error;
@@ -3379,7 +5027,8 @@ async function createTeacher(e){
 
     await logActivity(
       "ADD_TEACHER",
-      "Added teacher " + name
+      "Added teacher " +
+      name
     );
 
 
@@ -3408,7 +5057,8 @@ function editTeacher(id){
 
   const teacher =
     state.teachers.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!teacher){
@@ -3437,47 +5087,85 @@ function editTeacher(id){
     <form id="editTeacherForm">
 
       <div class="form-group">
-        <label>Teacher ID</label>
+
+        <label>
+          Teacher ID
+        </label>
+
         <input
           id="editTeacherId"
-          value="${escapeHTML(teacher.teacher_id)}"
+          value="${escapeHTML(
+            teacher.teacher_id
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Name</label>
+
+        <label>
+          Name
+        </label>
+
         <input
           id="editTeacherName"
-          value="${escapeHTML(teacher.name)}"
+          value="${escapeHTML(
+            teacher.name
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Email</label>
+
+        <label>
+          Email
+        </label>
+
         <input
-          value="${escapeHTML(teacher.email)}"
+          value="${escapeHTML(
+            teacher.email
+          )}"
           disabled
         >
+
       </div>
+
 
       <div class="form-group">
 
-        <label>Status</label>
+        <label>
+          Status
+        </label>
 
-        <select id="editTeacherStatus">
+        <select
+          id="editTeacherStatus"
+        >
 
           <option
             value="active"
-            ${teacher.status==="active"?"selected":""}
+            ${
+              teacher.status ===
+              "active"
+              ? "selected"
+              : ""
+            }
           >
             Active
           </option>
 
           <option
             value="inactive"
-            ${teacher.status==="inactive"?"selected":""}
+            ${
+              teacher.status ===
+              "inactive"
+              ? "selected"
+              : ""
+            }
           >
             Inactive
           </option>
@@ -3510,7 +5198,9 @@ function editTeacher(id){
 
 
   document
-    .getElementById("editTeacherForm")
+    .getElementById(
+      "editTeacherForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -3525,22 +5215,35 @@ function editTeacher(id){
             await db
               .from("teachers")
               .update({
+
                 teacher_id:
-                  document.getElementById(
-                    "editTeacherId"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editTeacherId"
+                    )
+                    .value
+                    .trim(),
 
                 name:
-                  document.getElementById(
-                    "editTeacherName"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editTeacherName"
+                    )
+                    .value
+                    .trim(),
 
                 status:
-                  document.getElementById(
-                    "editTeacherStatus"
-                  ).value
+                  document
+                    .getElementById(
+                      "editTeacherStatus"
+                    )
+                    .value
+
               })
-              .eq("id",id);
+              .eq(
+                "id",
+                id
+              );
 
           if(error){
             throw error;
@@ -3571,7 +5274,8 @@ async function deleteTeacher(id){
 
   const teacher =
     state.teachers.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!teacher){
@@ -3582,10 +5286,12 @@ async function deleteTeacher(id){
     teacher.auth_user_id ===
     state.user.id
   ){
+
     showToast(
       "You cannot delete your own account.",
       "error"
     );
+
     return;
   }
 
@@ -3607,7 +5313,8 @@ async function deleteTeacher(id){
       await callFunction(
         "delete_teacher",
         {
-          user_id:teacher.auth_user_id
+          user_id:
+            teacher.auth_user_id
         }
       );
     }
@@ -3619,8 +5326,10 @@ async function deleteTeacher(id){
       await db
         .from("teachers")
         .delete()
-        .eq("id",id);
-
+        .eq(
+          "id",
+          id
+        );
 
     if(error){
       throw error;
@@ -3685,7 +5394,9 @@ async function renderSubjects(){
       </div>
 
       <div id="subjectTable">
-        ${subjectTableHTML(state.subjects)}
+        ${subjectTableHTML(
+          state.subjects
+        )}
       </div>
 
     </div>
@@ -3718,69 +5429,72 @@ function subjectTableHTML(subjects){
 
           ${
             subjects.length
-            ? subjects.map(subject=>`
+            ? subjects.map(
+                subject => `
 
-              <tr>
+                  <tr>
 
-                <td>
-                  <strong>
-                    ${escapeHTML(
-                      subject.subject_code
-                    )}
-                  </strong>
-                </td>
+                    <td>
+                      <strong>
+                        ${escapeHTML(
+                          subject.subject_code
+                        )}
+                      </strong>
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    subject.subject_name
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        subject.subject_name
+                      )}
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    subject.course_section
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        subject.course_section
+                      )}
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    subject.school_year
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        subject.school_year
+                      )}
+                    </td>
 
-                <td>
-                  ${escapeHTML(
-                    subject.semester
-                  )}
-                </td>
+                    <td>
+                      ${escapeHTML(
+                        subject.semester
+                      )}
+                    </td>
 
-                <td>
+                    <td>
 
-                  <button
-                    class="secondary-btn small-btn"
-                    onclick="editSubject('${subject.id}')"
-                  >
-                    Edit
-                  </button>
+                      <button
+                        class="secondary-btn small-btn"
+                        onclick="editSubject('${subject.id}')"
+                      >
+                        Edit
+                      </button>
 
-                  <button
-                    class="danger-btn small-btn"
-                    onclick="deleteSubject('${subject.id}')"
-                  >
-                    Delete
-                  </button>
+                      <button
+                        class="danger-btn small-btn"
+                        onclick="deleteSubject('${subject.id}')"
+                      >
+                        Delete
+                      </button>
 
-                </td>
+                    </td>
 
-              </tr>
-
-            `).join("")
+                  </tr>
+                `
+              ).join("")
             : `
+
               <tr>
                 <td colspan="6">
                   No subjects found.
                 </td>
               </tr>
+
             `
           }
 
@@ -3797,28 +5511,33 @@ function filterSubjects(){
 
   const q =
     document
-      .getElementById("subjectSearch")
+      .getElementById(
+        "subjectSearch"
+      )
       .value
       .toLowerCase();
 
   const filtered =
-    state.subjects.filter(s=>
-      [
-        s.subject_code,
-        s.subject_name,
-        s.course_section,
-        s.school_year,
-        s.semester
-      ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q)
+    state.subjects.filter(
+      s =>
+        [
+          s.subject_code,
+          s.subject_name,
+          s.course_section,
+          s.school_year,
+          s.semester
+        ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
     );
 
   document.getElementById(
     "subjectTable"
   ).innerHTML =
-    subjectTableHTML(filtered);
+    subjectTableHTML(
+      filtered
+    );
 }
 
 
@@ -3950,7 +5669,9 @@ function openSubjectModal(){
 
 
   document
-    .getElementById("subjectForm")
+    .getElementById(
+      "subjectForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -3999,24 +5720,29 @@ function openSubjectModal(){
               .value;
 
 
-          /* IMPORTANT:
-             These are the REAL columns
-             in your subjects table.
-          */
-
           const {
             error
           } =
             await db
               .from("subjects")
               .insert({
-                subject_code:subjectCode,
-                subject_name:subjectName,
-                course_section:courseSection,
-                school_year:schoolYear,
-                semester:semester
-              });
 
+                subject_code:
+                  subjectCode,
+
+                subject_name:
+                  subjectName,
+
+                course_section:
+                  courseSection,
+
+                school_year:
+                  schoolYear,
+
+                semester:
+                  semester
+
+              });
 
           if(error){
             throw error;
@@ -4057,7 +5783,8 @@ function editSubject(id){
 
   const subject =
     state.subjects.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!subject){
@@ -4086,61 +5813,113 @@ function editSubject(id){
     <form id="editSubjectForm">
 
       <div class="form-group">
-        <label>Subject Code</label>
+
+        <label>
+          Subject Code
+        </label>
+
         <input
           id="editSubjectCode"
-          value="${escapeHTML(subject.subject_code)}"
+          value="${escapeHTML(
+            subject.subject_code
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Subject Name</label>
+
+        <label>
+          Subject Name
+        </label>
+
         <input
           id="editSubjectName"
-          value="${escapeHTML(subject.subject_name)}"
+          value="${escapeHTML(
+            subject.subject_name
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Course / Section</label>
+
+        <label>
+          Course / Section
+        </label>
+
         <input
           id="editSubjectSection"
-          value="${escapeHTML(subject.course_section)}"
+          value="${escapeHTML(
+            subject.course_section
+          )}"
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>School Year</label>
+
+        <label>
+          School Year
+        </label>
+
         <input
           id="editSubjectYear"
-          value="${escapeHTML(subject.school_year)}"
+          value="${escapeHTML(
+            subject.school_year
+          )}"
         >
+
       </div>
 
-      <div class="form-group">
-        <label>Semester</label>
 
-        <select id="editSubjectSemester">
+      <div class="form-group">
+
+        <label>
+          Semester
+        </label>
+
+        <select
+          id="editSubjectSemester"
+        >
 
           <option
             value="1st Semester"
-            ${subject.semester==="1st Semester"?"selected":""}
+            ${
+              subject.semester ===
+              "1st Semester"
+              ? "selected"
+              : ""
+            }
           >
             1st Semester
           </option>
 
           <option
             value="2nd Semester"
-            ${subject.semester==="2nd Semester"?"selected":""}
+            ${
+              subject.semester ===
+              "2nd Semester"
+              ? "selected"
+              : ""
+            }
           >
             2nd Semester
           </option>
 
           <option
             value="Summer"
-            ${subject.semester==="Summer"?"selected":""}
+            ${
+              subject.semester ===
+              "Summer"
+              ? "selected"
+              : ""
+            }
           >
             Summer
           </option>
@@ -4160,7 +5939,9 @@ function editSubject(id){
           Cancel
         </button>
 
-        <button class="primary-btn">
+        <button
+          class="primary-btn"
+        >
           Save Changes
         </button>
 
@@ -4171,7 +5952,9 @@ function editSubject(id){
 
 
   document
-    .getElementById("editSubjectForm")
+    .getElementById(
+      "editSubjectForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -4186,32 +5969,51 @@ function editSubject(id){
             await db
               .from("subjects")
               .update({
+
                 subject_code:
-                  document.getElementById(
-                    "editSubjectCode"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editSubjectCode"
+                    )
+                    .value
+                    .trim(),
 
                 subject_name:
-                  document.getElementById(
-                    "editSubjectName"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editSubjectName"
+                    )
+                    .value
+                    .trim(),
 
                 course_section:
-                  document.getElementById(
-                    "editSubjectSection"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editSubjectSection"
+                    )
+                    .value
+                    .trim(),
 
                 school_year:
-                  document.getElementById(
-                    "editSubjectYear"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editSubjectYear"
+                    )
+                    .value
+                    .trim(),
 
                 semester:
-                  document.getElementById(
-                    "editSubjectSemester"
-                  ).value
+                  document
+                    .getElementById(
+                      "editSubjectSemester"
+                    )
+                    .value
+
               })
-              .eq("id",id);
+              .eq(
+                "id",
+                id
+              );
 
 
           if(error){
@@ -4240,11 +6042,16 @@ function editSubject(id){
 }
 
 
+/* =========================================================
+   DELETE SUBJECT
+========================================================= */
+
 async function deleteSubject(id){
 
   const subject =
     state.subjects.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!subject){
@@ -4270,7 +6077,10 @@ async function deleteSubject(id){
       await db
         .from("subjects")
         .delete()
-        .eq("id",id);
+        .eq(
+          "id",
+          id
+        );
 
     if(error){
       throw error;
@@ -4341,85 +6151,115 @@ async function renderRooms(){
 
             ${
               state.rooms.length
-              ? state.rooms.map(room=>`
+              ? state.rooms.map(
+                  room => `
 
-                <tr>
+                    <tr>
 
-                  <td>
-                    ${escapeHTML(
-                      room.room_name
-                    )}
-                  </td>
+                      <td>
+                        ${escapeHTML(
+                          room.room_name ||
+                          "-"
+                        )}
+                      </td>
 
-                  <td>
-                    ${escapeHTML(
-                      room.room_code
-                    )}
-                  </td>
+                      <td>
+                        ${escapeHTML(
+                          room.room_code ||
+                          "-"
+                        )}
+                      </td>
 
-                  <td>
-                    ${escapeHTML(
-                      room.reader_id
-                    )}
-                  </td>
+                      <td>
+                        ${escapeHTML(
+                          room.reader_id ||
+                          "-"
+                        )}
+                      </td>
 
-                  <td>
-                    ${escapeHTML(
-                      room.location
-                    )}
-                  </td>
+                      <td>
+                        ${escapeHTML(
+                          room.location ||
+                          "-"
+                        )}
+                      </td>
 
-                  <td>
+                      <td>
 
-                    ${
-                      room.status === "active"
-                      ? `<span class="badge badge-active">Active</span>`
-                      : `<span class="badge badge-inactive">${escapeHTML(room.status)}</span>`
-                    }
+                        ${
+                          room.status ===
+                          "active"
 
-                  </td>
+                          ? `
+                            <span class="badge badge-active">
+                              Active
+                            </span>
+                          `
 
-                  <td>
-                    ${
-                      room.last_seen
-                      ? formatDate(room.last_seen) +
-                        " " +
-                        formatTime(room.last_seen)
-                      : "-"
-                    }
-                  </td>
+                          : `
+                            <span class="badge badge-inactive">
+                              ${escapeHTML(
+                                room.status ||
+                                "inactive"
+                              )}
+                            </span>
+                          `
+                        }
 
-                  <td>
+                      </td>
 
-                    <button
-                      class="secondary-btn small-btn"
-                      onclick="editRoom('${room.id}')"
-                    >
-                      Edit
-                    </button>
+                      <td>
 
-                    <button
-                      class="danger-btn small-btn"
-                      onclick="toggleRoom('${room.id}')"
-                    >
-                      ${
-                        room.status==="active"
-                        ? "Deactivate"
-                        : "Activate"
-                      }
-                    </button>
+                        ${
+                          room.last_seen
 
-                  </td>
+                          ? formatDate(
+                              room.last_seen
+                            ) +
+                            " " +
+                            formatTime(
+                              room.last_seen
+                            )
 
-                </tr>
+                          : "-"
+                        }
 
-              `).join("")
+                      </td>
+
+                      <td>
+
+                        <button
+                          class="secondary-btn small-btn"
+                          onclick="editRoom('${room.id}')"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          class="danger-btn small-btn"
+                          onclick="toggleRoom('${room.id}')"
+                        >
+                          ${
+                            room.status ===
+                            "active"
+                            ? "Deactivate"
+                            : "Activate"
+                          }
+                        </button>
+
+                      </td>
+
+                    </tr>
+                  `
+                ).join("")
               : `
+
                 <tr>
                   <td colspan="7">
                     No rooms found.
                   </td>
                 </tr>
+
               `
             }
 
@@ -4457,38 +6297,61 @@ function openRoomModal(){
     <form id="roomForm">
 
       <div class="form-group">
-        <label>Room Name</label>
+
+        <label>
+          Room Name
+        </label>
+
         <input
           id="roomName"
           placeholder="Room 101"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Room Code</label>
+
+        <label>
+          Room Code
+        </label>
+
         <input
           id="roomCode"
           placeholder="RM101"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Reader ID</label>
+
+        <label>
+          Reader ID
+        </label>
+
         <input
           id="readerId"
           placeholder="READER-001"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Location</label>
+
+        <label>
+          Location
+        </label>
+
         <input
           id="roomLocation"
           placeholder="Main Building"
         >
+
       </div>
 
 
@@ -4513,7 +6376,9 @@ function openRoomModal(){
 
 
   document
-    .getElementById("roomForm")
+    .getElementById(
+      "roomForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -4528,27 +6393,42 @@ function openRoomModal(){
             await db
               .from("rooms")
               .insert({
+
                 room_name:
-                  document.getElementById(
-                    "roomName"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "roomName"
+                    )
+                    .value
+                    .trim(),
 
                 room_code:
-                  document.getElementById(
-                    "roomCode"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "roomCode"
+                    )
+                    .value
+                    .trim(),
 
                 reader_id:
-                  document.getElementById(
-                    "readerId"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "readerId"
+                    )
+                    .value
+                    .trim(),
 
                 location:
-                  document.getElementById(
-                    "roomLocation"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "roomLocation"
+                    )
+                    .value
+                    .trim(),
 
-                status:"active"
+                status:
+                  "active"
+
               });
 
 
@@ -4582,7 +6462,8 @@ function editRoom(id){
 
   const room =
     state.rooms.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!room){
@@ -4611,38 +6492,69 @@ function editRoom(id){
     <form id="editRoomForm">
 
       <div class="form-group">
-        <label>Room Name</label>
+
+        <label>
+          Room Name
+        </label>
+
         <input
           id="editRoomName"
-          value="${escapeHTML(room.room_name)}"
+          value="${escapeHTML(
+            room.room_name
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Room Code</label>
+
+        <label>
+          Room Code
+        </label>
+
         <input
           id="editRoomCode"
-          value="${escapeHTML(room.room_code)}"
+          value="${escapeHTML(
+            room.room_code
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Reader ID</label>
+
+        <label>
+          Reader ID
+        </label>
+
         <input
           id="editReaderId"
-          value="${escapeHTML(room.reader_id)}"
+          value="${escapeHTML(
+            room.reader_id
+          )}"
           required
         >
+
       </div>
 
+
       <div class="form-group">
-        <label>Location</label>
+
+        <label>
+          Location
+        </label>
+
         <input
           id="editRoomLocation"
-          value="${escapeHTML(room.location || "")}"
+          value="${escapeHTML(
+            room.location || ""
+          )}"
         >
+
       </div>
 
 
@@ -4656,7 +6568,9 @@ function editRoom(id){
           Cancel
         </button>
 
-        <button class="primary-btn">
+        <button
+          class="primary-btn"
+        >
           Save Changes
         </button>
 
@@ -4667,7 +6581,9 @@ function editRoom(id){
 
 
   document
-    .getElementById("editRoomForm")
+    .getElementById(
+      "editRoomForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -4682,27 +6598,44 @@ function editRoom(id){
             await db
               .from("rooms")
               .update({
+
                 room_name:
-                  document.getElementById(
-                    "editRoomName"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editRoomName"
+                    )
+                    .value
+                    .trim(),
 
                 room_code:
-                  document.getElementById(
-                    "editRoomCode"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editRoomCode"
+                    )
+                    .value
+                    .trim(),
 
                 reader_id:
-                  document.getElementById(
-                    "editReaderId"
-                  ).value.trim(),
+                  document
+                    .getElementById(
+                      "editReaderId"
+                    )
+                    .value
+                    .trim(),
 
                 location:
-                  document.getElementById(
-                    "editRoomLocation"
-                  ).value.trim()
+                  document
+                    .getElementById(
+                      "editRoomLocation"
+                    )
+                    .value
+                    .trim()
+
               })
-              .eq("id",id);
+              .eq(
+                "id",
+                id
+              );
 
 
           if(error){
@@ -4735,7 +6668,8 @@ async function toggleRoom(id){
 
   const room =
     state.rooms.find(
-      x=>x.id === id
+      x =>
+        x.id === id
     );
 
   if(!room){
@@ -4758,8 +6692,10 @@ async function toggleRoom(id){
         .update({
           status:newStatus
         })
-        .eq("id",id);
-
+        .eq(
+          "id",
+          id
+        );
 
     if(error){
       throw error;
@@ -4819,7 +6755,11 @@ async function renderAssignments(){
           room_name,
           reader_id
         )
-      `);
+      `)
+      .order(
+        "created_at",
+        {ascending:false}
+      );
 
 
   if(error){
@@ -4869,60 +6809,72 @@ async function renderAssignments(){
 
             ${
               state.assignments.length
-              ? state.assignments.map(a=>`
+              ? state.assignments.map(
+                  a => `
 
-                <tr>
+                    <tr>
 
-                  <td>
-                    ${escapeHTML(
-                      a.teachers?.name
-                    )}
-                  </td>
+                      <td>
+                        ${escapeHTML(
+                          a.teachers?.name ||
+                          "-"
+                        )}
+                      </td>
 
-                  <td>
-                    <strong>
-                      ${escapeHTML(
-                        a.subjects?.subject_code
-                      )}
-                    </strong>
-                    <br>
-                    ${escapeHTML(
-                      a.subjects?.subject_name
-                    )}
-                  </td>
+                      <td>
 
-                  <td>
-                    ${escapeHTML(
-                      a.rooms?.room_name
-                    )}
-                  </td>
+                        <strong>
+                          ${escapeHTML(
+                            a.subjects?.subject_code ||
+                            "-"
+                          )}
+                        </strong>
 
-                  <td>
-                    ${escapeHTML(
-                      a.rooms?.reader_id
-                    )}
-                  </td>
+                        <br>
 
-                  <td>
+                        ${escapeHTML(
+                          a.subjects?.subject_name ||
+                          "-"
+                        )}
 
-                    <button
-                      class="danger-btn small-btn"
-                      onclick="deleteAssignment('${a.id}')"
-                    >
-                      Remove
-                    </button>
+                      </td>
 
-                  </td>
+                      <td>
+                        ${escapeHTML(
+                          a.rooms?.room_name ||
+                          "-"
+                        )}
+                      </td>
 
-                </tr>
+                      <td>
+                        ${escapeHTML(
+                          a.rooms?.reader_id ||
+                          "-"
+                        )}
+                      </td>
 
-              `).join("")
+                      <td>
+
+                        <button
+                          class="danger-btn small-btn"
+                          onclick="deleteAssignment('${a.id}')"
+                        >
+                          Remove
+                        </button>
+
+                      </td>
+
+                    </tr>
+                  `
+                ).join("")
               : `
+
                 <tr>
                   <td colspan="5">
                     No assignments.
                   </td>
                 </tr>
+
               `
             }
 
@@ -4965,20 +6917,29 @@ function openAssignmentModal(){
           Teacher
         </label>
 
-        <select id="assignmentTeacher" required>
+        <select
+          id="assignmentTeacher"
+          required
+        >
 
           <option value="">
             Select teacher
           </option>
 
           ${
-            state.teachers.map(t=>`
+            state.teachers.map(
+              t => `
 
-              <option value="${t.id}">
-                ${escapeHTML(t.name)}
-              </option>
-
-            `).join("")
+                <option
+                  value="${t.id}"
+                >
+                  ${escapeHTML(
+                    t.name ||
+                    "-"
+                  )}
+                </option>
+              `
+            ).join("")
           }
 
         </select>
@@ -4992,26 +6953,34 @@ function openAssignmentModal(){
           Subject
         </label>
 
-        <select id="assignmentSubject" required>
+        <select
+          id="assignmentSubject"
+          required
+        >
 
           <option value="">
             Select subject
           </option>
 
           ${
-            state.subjects.map(s=>`
+            state.subjects.map(
+              s => `
 
-              <option value="${s.id}">
-                ${escapeHTML(
-                  s.subject_code
-                )}
-                -
-                ${escapeHTML(
-                  s.subject_name
-                )}
-              </option>
-
-            `).join("")
+                <option
+                  value="${s.id}"
+                >
+                  ${escapeHTML(
+                    s.subject_code ||
+                    "-"
+                  )}
+                  -
+                  ${escapeHTML(
+                    s.subject_name ||
+                    "-"
+                  )}
+                </option>
+              `
+            ).join("")
           }
 
         </select>
@@ -5025,7 +6994,10 @@ function openAssignmentModal(){
           RFID Room
         </label>
 
-        <select id="assignmentRoom" required>
+        <select
+          id="assignmentRoom"
+          required
+        >
 
           <option value="">
             Select room
@@ -5034,21 +7006,29 @@ function openAssignmentModal(){
           ${
             state.rooms
               .filter(
-                r=>r.status==="active"
+                r =>
+                  r.status ===
+                  "active"
               )
-              .map(r=>`
+              .map(
+                r => `
 
-                <option value="${r.id}">
-                  ${escapeHTML(
-                    r.room_name
-                  )}
-                  -
-                  ${escapeHTML(
-                    r.reader_id
-                  )}
-                </option>
-
-              `).join("")
+                  <option
+                    value="${r.id}"
+                  >
+                    ${escapeHTML(
+                      r.room_name ||
+                      "-"
+                    )}
+                    -
+                    ${escapeHTML(
+                      r.reader_id ||
+                      "-"
+                    )}
+                  </option>
+                `
+              )
+              .join("")
           }
 
         </select>
@@ -5066,7 +7046,9 @@ function openAssignmentModal(){
           Cancel
         </button>
 
-        <button class="primary-btn">
+        <button
+          class="primary-btn"
+        >
           Save Assignment
         </button>
 
@@ -5077,7 +7059,9 @@ function openAssignmentModal(){
 
 
   document
-    .getElementById("assignmentForm")
+    .getElementById(
+      "assignmentForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -5092,22 +7076,29 @@ function openAssignmentModal(){
             await db
               .from("teacher_subjects")
               .insert({
+
                 teacher_id:
-                  document.getElementById(
-                    "assignmentTeacher"
-                  ).value,
+                  document
+                    .getElementById(
+                      "assignmentTeacher"
+                    )
+                    .value,
 
                 subject_id:
-                  document.getElementById(
-                    "assignmentSubject"
-                  ).value,
+                  document
+                    .getElementById(
+                      "assignmentSubject"
+                    )
+                    .value,
 
                 room_id:
-                  document.getElementById(
-                    "assignmentRoom"
-                  ).value
-              });
+                  document
+                    .getElementById(
+                      "assignmentRoom"
+                    )
+                    .value
 
+              });
 
           if(error){
             throw error;
@@ -5153,8 +7144,10 @@ async function deleteAssignment(id){
       await db
         .from("teacher_subjects")
         .delete()
-        .eq("id",id);
-
+        .eq(
+          "id",
+          id
+        );
 
     if(error){
       throw error;
@@ -5179,7 +7172,7 @@ async function deleteAssignment(id){
 
 
 /* =========================================================
-   ATTENDANCE
+   ATTENDANCE TABLE
 ========================================================= */
 
 function attendanceTableHTML(records){
@@ -5217,59 +7210,60 @@ function attendanceTableHTML(records){
         <tbody>
 
           ${
-            records.map(row=>`
+            records.map(
+              row => `
 
-              <tr>
+                <tr>
 
-                <td>
-                  ${formatDate(
-                    row.timestamp
-                  )}
-                </td>
+                  <td>
+                    ${formatDate(
+                      row.timestamp
+                    )}
+                  </td>
 
-                <td>
-                  ${escapeHTML(
-                    row.students?.full_name ||
-                    "-"
-                  )}
-                </td>
+                  <td>
+                    ${escapeHTML(
+                      row.students?.full_name ||
+                      "-"
+                    )}
+                  </td>
 
-                <td>
-                  ${escapeHTML(
-                    row.students?.student_id_number ||
-                    "-"
-                  )}
-                </td>
+                  <td>
+                    ${escapeHTML(
+                      row.students?.student_id_number ||
+                      "-"
+                    )}
+                  </td>
 
-                <td>
-                  ${escapeHTML(
-                    row.subjects?.subject_code ||
-                    "-"
-                  )}
-                </td>
+                  <td>
+                    ${escapeHTML(
+                      row.subjects?.subject_code ||
+                      "-"
+                    )}
+                  </td>
 
-                <td>
-                  ${formatTime(
-                    row.timestamp
-                  )}
-                </td>
+                  <td>
+                    ${formatTime(
+                      row.timestamp
+                    )}
+                  </td>
 
-                <td>
-                  ${statusBadge(
-                    row.status
-                  )}
-                </td>
+                  <td>
+                    ${statusBadge(
+                      row.status
+                    )}
+                  </td>
 
-                <td>
-                  ${escapeHTML(
-                    row.reader_id ||
-                    "-"
-                  )}
-                </td>
+                  <td>
+                    ${escapeHTML(
+                      row.reader_id ||
+                      "-"
+                    )}
+                  </td>
 
-              </tr>
-
-            `).join("")
+                </tr>
+              `
+            ).join("")
           }
 
         </tbody>
@@ -5280,6 +7274,10 @@ function attendanceTableHTML(records){
   `;
 }
 
+
+/* =========================================================
+   ADMIN ATTENDANCE
+========================================================= */
 
 async function renderAttendance(){
 
@@ -5353,9 +7351,11 @@ async function renderAttendance(){
 
 
       <div id="attendanceTable">
+
         ${attendanceTableHTML(
           state.attendance
         )}
+
       </div>
 
     </div>
@@ -5389,44 +7389,51 @@ function filterAttendance(){
 
 
   const filtered =
-    state.attendance.filter(row=>{
+    state.attendance.filter(
+      row => {
 
-      const studentName =
-        row.students?.full_name || "";
+        const studentName =
+          row.students?.full_name ||
+          "";
 
-      const studentId =
-        row.students?.student_id_number || "";
+        const studentId =
+          row.students?.student_id_number ||
+          "";
 
-      const matchesSearch =
-        (
-          studentName +
-          " " +
-          studentId
-        )
-        .toLowerCase()
-        .includes(search);
+        const matchesSearch =
+          (
+            studentName +
+            " " +
+            studentId
+          )
+          .toLowerCase()
+          .includes(search);
 
-      const matchesStatus =
-        !status ||
-        row.status === status;
+        const matchesStatus =
+          !status ||
+          row.status === status;
 
-      const matchesDate =
-        !date ||
-        String(row.timestamp)
-          .slice(0,10) === date;
+        const matchesDate =
+          !date ||
+          localDateString(
+            row.timestamp
+          ) === date;
 
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesDate
-      );
-    });
+        return (
+          matchesSearch &&
+          matchesStatus &&
+          matchesDate
+        );
+      }
+    );
 
 
   document.getElementById(
     "attendanceTable"
   ).innerHTML =
-    attendanceTableHTML(filtered);
+    attendanceTableHTML(
+      filtered
+    );
 }
 
 
@@ -5437,6 +7444,7 @@ function filterAttendance(){
 async function renderTeacherAttendance(){
 
   await Promise.all([
+    loadTeachers(),
     loadSubjects(),
     loadRooms(),
     loadStudents(),
@@ -5446,8 +7454,39 @@ async function renderTeacherAttendance(){
 
   const teacher =
     state.teachers.find(
-      t=>t.auth_user_id === state.user.id
+      t =>
+        t.auth_user_id ===
+        state.user.id
     );
+
+
+  const assignments =
+    teacher
+      ? await loadTeacherAssignments()
+      : [];
+
+
+  const assignedSubjectIds =
+    assignments.map(
+      a =>
+        a.subject_id
+    );
+
+  const assignedRoomIds =
+    assignments.map(
+      a =>
+        a.room_id
+    );
+
+
+  const records =
+    teacher
+      ? state.attendance.filter(
+          row =>
+            row.teacher_id ===
+            teacher.id
+        )
+      : [];
 
 
   document.getElementById(
@@ -5461,105 +7500,143 @@ async function renderTeacherAttendance(){
       </div>
 
 
-      <div class="grid-3">
+      ${
+        !teacher
+        ? `
+          <div
+            class="card"
+            style="
+              border:1px solid var(--red);
+              color:var(--red);
+            "
+          >
+            Teacher profile not found.
+          </div>
+        `
+        : `
+          <div class="grid-3">
 
-        <div class="form-group">
+            <div class="form-group">
 
-          <label>
-            Subject
-          </label>
+              <label>
+                Subject
+              </label>
 
-          <select id="sessionSubject">
+              <select
+                id="sessionSubject"
+              >
 
-            <option value="">
-              Select Subject
-            </option>
-
-            ${
-              state.subjects.map(s=>`
-
-                <option value="${s.id}">
-                  ${escapeHTML(
-                    s.subject_code
-                  )}
-                  -
-                  ${escapeHTML(
-                    s.subject_name
-                  )}
+                <option value="">
+                  Select Subject
                 </option>
 
-              `).join("")
-            }
+                ${
+                  assignments
+                    .map(
+                      a => `
 
-          </select>
+                        <option
+                          value="${a.subject_id}"
+                        >
+                          ${escapeHTML(
+                            a.subjects?.subject_code ||
+                            "-"
+                          )}
+                          -
+                          ${escapeHTML(
+                            a.subjects?.subject_name ||
+                            "-"
+                          )}
+                        </option>
+                      `
+                    )
+                    .join("")
+                }
 
-        </div>
+              </select>
+
+            </div>
 
 
-        <div class="form-group">
+            <div class="form-group">
 
-          <label>
-            Class Section
-          </label>
+              <label>
+                Class Section
+              </label>
 
-          <input
-            id="sessionSection"
-            placeholder="BSIT 1A"
+              <input
+                id="sessionSection"
+                placeholder="BSIT 1A"
+              >
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                RFID Reader
+              </label>
+
+              <select
+                id="sessionRoom"
+              >
+
+                <option value="">
+                  Select RFID Room
+                </option>
+
+                ${
+                  assignments
+                    .filter(
+                      a =>
+                        a.rooms?.status ===
+                        "active"
+                    )
+                    .map(
+                      a => `
+
+                        <option
+                          value="${a.room_id}"
+                        >
+                          ${escapeHTML(
+                            a.rooms?.room_name ||
+                            "-"
+                          )}
+                          -
+                          ${escapeHTML(
+                            a.rooms?.reader_id ||
+                            "-"
+                          )}
+                        </option>
+                      `
+                    )
+                    .join("")
+                }
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <button
+            class="primary-btn"
+            onclick="startSession()"
           >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label>
-            RFID Reader
-          </label>
-
-          <select id="sessionRoom">
-
-            <option value="">
-              Select RFID Room
-            </option>
-
-            ${
-              state.rooms
-                .filter(
-                  r=>r.status==="active"
-                )
-                .map(r=>`
-
-                  <option value="${r.id}">
-                    ${escapeHTML(
-                      r.room_name
-                    )}
-                    -
-                    ${escapeHTML(
-                      r.reader_id
-                    )}
-                  </option>
-
-                `).join("")
-            }
-
-          </select>
-
-        </div>
-
-      </div>
-
-
-      <button
-        class="primary-btn"
-        onclick="startSession()"
-      >
-        Start Class
-      </button>
+            Start Class
+          </button>
+        `
+      }
 
     </div>
 
 
-    <div class="card" style="margin-top:20px">
+    <div
+      class="card"
+      style="margin-top:20px"
+    >
 
       <div class="card-title">
         RFID Scanner
@@ -5576,10 +7653,19 @@ async function renderTeacherAttendance(){
           id="scannerStatus"
           class="rfid-status"
         >
-          Waiting for Class Session
+          ${
+            state.currentSession
+              ? "Session Active - Waiting for RFID Scans"
+              : "Waiting for Class Session"
+          }
         </div>
 
-        <p style="margin-top:10px;color:var(--muted)">
+        <p
+          style="
+            margin-top:10px;
+            color:var(--muted)
+          "
+        >
           ESP32 RFID readers should send attendance
           records using the assigned reader_id.
         </p>
@@ -5596,7 +7682,7 @@ async function renderTeacherAttendance(){
     >
 
       ${attendanceTableHTML(
-        state.attendance
+        records
       )}
 
     </div>
@@ -5608,16 +7694,24 @@ async function startSession(){
 
   const teacher =
     state.teachers.find(
-      t=>t.auth_user_id === state.user.id
+      t =>
+        t.auth_user_id ===
+        state.user.id
     );
 
   if(!teacher){
+
     showToast(
       "Teacher profile not found.",
       "error"
     );
+
     return;
   }
+
+
+  const assignments =
+    await loadTeacherAssignments();
 
 
   const subjectId =
@@ -5647,18 +7741,53 @@ async function startSession(){
     !subjectId ||
     !roomId
   ){
+
     showToast(
       "Select a subject and RFID room.",
       "error"
     );
+
+    return;
+  }
+
+
+  const assignment =
+    assignments.find(
+      a =>
+        a.subject_id ===
+        subjectId &&
+        a.room_id ===
+        roomId
+    );
+
+
+  if(!assignment){
+
+    showToast(
+      "This subject and RFID room are not assigned to you.",
+      "error"
+    );
+
     return;
   }
 
 
   const room =
     state.rooms.find(
-      r=>r.id === roomId
+      r =>
+        r.id === roomId
     );
+
+
+  if(!room){
+
+    showToast(
+      "RFID room not found.",
+      "error"
+    );
+
+    return;
+  }
 
 
   try{
@@ -5670,13 +7799,28 @@ async function startSession(){
       await db
         .from("attendance_sessions")
         .insert({
-          teacher_id:teacher.id,
-          subject_id:subjectId,
-          room_id:roomId,
-          reader_id:room.reader_id,
-          course_section:section,
-          start_time:new Date().toISOString(),
-          status:"active"
+
+          teacher_id:
+            teacher.id,
+
+          subject_id:
+            subjectId,
+
+          room_id:
+            roomId,
+
+          reader_id:
+            room.reader_id,
+
+          course_section:
+            section,
+
+          start_time:
+            new Date().toISOString(),
+
+          status:
+            "active"
+
         })
         .select()
         .single();
@@ -5691,10 +7835,16 @@ async function startSession(){
       data;
 
 
-    document.getElementById(
-      "scannerStatus"
-    ).textContent =
-      "Session Active - Waiting for RFID Scans";
+    const scannerStatus =
+      document.getElementById(
+        "scannerStatus"
+      );
+
+    if(scannerStatus){
+
+      scannerStatus.textContent =
+        "Session Active - Waiting for RFID Scans";
+    }
 
 
     showToast(
@@ -5718,7 +7868,58 @@ async function startSession(){
 
 async function renderTeacherStudents(){
 
-  await loadStudents();
+  await Promise.all([
+    loadTeachers(),
+    loadStudents()
+  ]);
+
+
+  const teacher =
+    state.teachers.find(
+      t =>
+        t.auth_user_id ===
+        state.user.id
+    );
+
+
+  let students =
+    state.students;
+
+
+  if(teacher){
+
+    const assignments =
+      await loadTeacherAssignments();
+
+    const sections =
+      [
+        ...new Set(
+          assignments
+            .map(
+              a =>
+                a.subjects?.course_section
+            )
+            .filter(Boolean)
+        )
+      ];
+
+
+    if(sections.length){
+
+      students =
+        state.students.filter(
+          s =>
+            sections.includes(
+              s.course_section
+            )
+        );
+    }
+  }
+
+
+  window.teacherStudents =
+    students;
+
 
   document.getElementById(
     "content"
@@ -5740,7 +7941,7 @@ async function renderTeacherStudents(){
       <div id="teacherStudentTable">
 
         ${studentTableHTML(
-          state.students
+          students
         )}
 
       </div>
@@ -5762,22 +7963,28 @@ function filterTeacherStudents(){
 
 
   const filtered =
-    state.students.filter(s=>
-      [
-        s.student_id_number,
-        s.full_name,
-        s.course_section
-      ]
-      .join(" ")
-      .toLowerCase()
-      .includes(q)
+    (
+      window.teacherStudents ||
+      []
+    ).filter(
+      s =>
+        [
+          s.student_id_number,
+          s.full_name,
+          s.course_section
+        ]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
     );
 
 
   document.getElementById(
     "teacherStudentTable"
   ).innerHTML =
-    studentTableHTML(filtered);
+    studentTableHTML(
+      filtered
+    );
 }
 
 
@@ -5787,61 +7994,28 @@ function filterTeacherStudents(){
 
 async function renderMySubjects(){
 
-  await loadSubjects();
-
-  const teacher =
-    state.teachers.find(
-      t=>t.auth_user_id === state.user.id
-    );
+  await Promise.all([
+    loadTeachers(),
+    loadSubjects()
+  ]);
 
 
   let assignments = [];
 
 
   if(
-    state.profile.role === "teacher" &&
-    teacher
+    state.profile.role ===
+    "teacher"
   ){
 
-    const {
-      data,
-      error
-    } =
-      await db
-        .from("teacher_subjects")
-        .select(`
-          *,
-          subjects (
-            id,
-            subject_code,
-            subject_name,
-            course_section,
-            school_year,
-            semester
-          ),
-          rooms (
-            id,
-            room_name,
-            reader_id
-          )
-        `)
-        .eq(
-          "teacher_id",
-          teacher.id
-        );
-
-
-    if(error){
-      throw error;
-    }
-
     assignments =
-      data || [];
+      await loadTeacherAssignments();
   }
 
 
   if(
-    state.profile.role === "student"
+    state.profile.role ===
+    "student"
   ){
 
     const student =
@@ -5852,13 +8026,15 @@ async function renderMySubjects(){
       assignments =
         state.subjects
           .filter(
-            s=>
+            s =>
               s.course_section ===
               student.course_section
           )
-          .map(s=>({
-            subjects:s
-          }));
+          .map(
+            s => ({
+              subjects:s
+            })
+          );
     }
   }
 
@@ -5871,71 +8047,752 @@ async function renderMySubjects(){
 
       ${
         assignments.length
-        ? assignments.map(a=>`
 
-          <div class="card">
+        ? assignments.map(
+            a => `
 
-            <div style="
-              color:var(--maroon);
-              font-size:18px;
-              font-weight:800
-            ">
-              ${escapeHTML(
-                a.subjects?.subject_code
-              )}
-            </div>
+              <div class="card">
 
-            <div style="
-              margin-top:8px;
-              font-weight:700
-            ">
-              ${escapeHTML(
-                a.subjects?.subject_name
-              )}
-            </div>
-
-            <div style="
-              margin-top:10px;
-              color:var(--muted);
-              font-size:13px
-            ">
-              ${escapeHTML(
-                a.subjects?.course_section ||
-                "-"
-              )}
-            </div>
-
-            ${
-              a.rooms
-              ? `
-                <div style="
-                  margin-top:8px;
-                  color:var(--muted);
-                  font-size:13px
-                ">
-                  Room:
+                <div
+                  style="
+                    color:var(--maroon);
+                    font-size:18px;
+                    font-weight:800
+                  "
+                >
                   ${escapeHTML(
-                    a.rooms.room_name
+                    a.subjects?.subject_code ||
+                    "-"
                   )}
                 </div>
-              `
-              : ""
-            }
 
-          </div>
+                <div
+                  style="
+                    margin-top:8px;
+                    font-weight:700
+                  "
+                >
+                  ${escapeHTML(
+                    a.subjects?.subject_name ||
+                    "-"
+                  )}
+                </div>
 
-        `).join("")
+                <div
+                  style="
+                    margin-top:10px;
+                    color:var(--muted);
+                    font-size:13px
+                  "
+                >
+                  ${escapeHTML(
+                    a.subjects?.course_section ||
+                    "-"
+                  )}
+                </div>
+
+                ${
+                  a.rooms
+                  ? `
+
+                    <div
+                      style="
+                        margin-top:8px;
+                        color:var(--muted);
+                        font-size:13px
+                      "
+                    >
+                      Room:
+                      ${escapeHTML(
+                        a.rooms.room_name ||
+                        "-"
+                      )}
+                    </div>
+
+                    <div
+                      style="
+                        margin-top:5px;
+                        color:var(--muted);
+                        font-size:13px
+                      "
+                    >
+                      Reader:
+                      ${escapeHTML(
+                        a.rooms.reader_id ||
+                        "-"
+                      )}
+                    </div>
+
+                  `
+                  : ""
+                }
+
+              </div>
+            `
+          ).join("")
+
         : `
+
           <div class="card">
-            <p style="color:var(--muted)">
+
+            <p
+              style="color:var(--muted)"
+            >
               No subjects assigned.
             </p>
+
           </div>
         `
       }
 
     </div>
   `;
+}
+
+
+/* =========================================================
+   GRADES
+========================================================= */
+
+function formatGrade(value){
+
+  const grade =
+    Number(value);
+
+  if(!Number.isFinite(grade)){
+    return "-";
+  }
+
+  return grade
+    .toFixed(2)
+    .replace(/\.00$/," ")
+    .trim();
+}
+
+
+function gradeChipHTML(value){
+
+  const grade =
+    Number(value);
+
+  const level =
+    grade >= 75
+      ? "grade-passing"
+      : "grade-review";
+
+  return `
+    <span class="grade-chip ${level}">
+      ${formatGrade(grade)}
+    </span>
+  `;
+}
+
+
+function gradeRecordsTableHTML(records,showStudent=false){
+
+  return `
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            ${
+              showStudent
+              ? `
+                <th>Student</th>
+                <th>Student ID</th>
+              `
+              : ""
+            }
+            <th>Subject</th>
+            <th>Section</th>
+            <th>Final Grade</th>
+            <th>Remarks</th>
+            <th>Last Updated</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${
+            records.length
+            ? records.map(record=>`
+              <tr>
+                ${
+                  showStudent
+                  ? `
+                    <td>
+                      <strong>
+                        ${escapeHTML(
+                          record.students?.full_name ||
+                          "Unknown Student"
+                        )}
+                      </strong>
+                    </td>
+                    <td>
+                      ${escapeHTML(
+                        record.students?.student_id_number ||
+                        "-"
+                      )}
+                    </td>
+                  `
+                  : ""
+                }
+                <td>
+                  <strong>
+                    ${escapeHTML(
+                      record.subjects?.subject_code ||
+                      "-"
+                    )}
+                  </strong>
+                  <div class="table-subtext">
+                    ${escapeHTML(
+                      record.subjects?.subject_name ||
+                      "-"
+                    )}
+                  </div>
+                </td>
+                <td>
+                  ${escapeHTML(
+                    record.subjects?.course_section ||
+                    "-"
+                  )}
+                </td>
+                <td>
+                  ${gradeChipHTML(record.grade)}
+                </td>
+                <td>
+                  ${escapeHTML(record.remarks || "-")}
+                </td>
+                <td>
+                  ${formatDate(record.updated_at)}
+                </td>
+              </tr>
+            `).join("")
+            : `
+              <tr>
+                <td colspan="${showStudent ? 7 : 5}">
+                  No grades have been recorded yet.
+                </td>
+              </tr>
+            `
+          }
+        </tbody>
+
+      </table>
+
+    </div>
+  `;
+}
+
+
+async function renderGrades(){
+
+  if(state.profile.role === "teacher"){
+    await renderTeacherGrades();
+    return;
+  }
+
+  if(state.profile.role === "student"){
+    await renderStudentGrades();
+    return;
+  }
+
+  await renderAdminGrades();
+}
+
+
+async function renderAdminGrades(){
+
+  const grades =
+    await loadGrades();
+
+  const gradedStudents =
+    new Set(
+      grades.map(record=>record.student_id)
+    ).size;
+
+  const average =
+    grades.length
+      ? grades.reduce(
+          (total,record)=>
+            total + Number(record.grade || 0),
+          0
+        ) / grades.length
+      : 0;
+
+  document.getElementById(
+    "content"
+  ).innerHTML = `
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Grade Records</div>
+        <div class="stat-value">${grades.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Students Graded</div>
+        <div class="stat-value">${gradedStudents}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Class Average</div>
+        <div class="stat-value">${formatGrade(average)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recorded Grades</div>
+      ${gradeRecordsTableHTML(grades,true)}
+    </div>
+  `;
+}
+
+
+async function renderStudentGrades(){
+
+  const student =
+    await getCurrentStudent();
+
+  if(!student){
+    document.getElementById(
+      "content"
+    ).innerHTML = `
+      <div class="card empty-state">
+        <h3>Student profile not found</h3>
+        <p>Your account is not linked to a student record.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const grades =
+    (
+      await loadGrades()
+    ).filter(
+      record =>
+        record.student_id === student.id
+    );
+
+  const average =
+    grades.length
+      ? grades.reduce(
+          (total,record)=>
+            total + Number(record.grade || 0),
+          0
+        ) / grades.length
+      : 0;
+
+  const highest =
+    grades.length
+      ? Math.max(
+          ...grades.map(
+            record=>Number(record.grade || 0)
+          )
+        )
+      : 0;
+
+  document.getElementById(
+    "content"
+  ).innerHTML = `
+
+    <div class="grade-hero">
+      <div>
+        <div class="grade-hero-kicker">Academic performance</div>
+        <h2>My Grades</h2>
+        <p>
+          View your latest grades as recorded by your teachers.
+        </p>
+      </div>
+      <div class="grade-hero-student">
+        ${escapeHTML(student.full_name)}
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Subjects Graded</div>
+        <div class="stat-value">${grades.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Average Grade</div>
+        <div class="stat-value">${formatGrade(average)}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Highest Grade</div>
+        <div class="stat-value">${formatGrade(highest)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Grade Records</div>
+      ${gradeRecordsTableHTML(grades)}
+    </div>
+  `;
+}
+
+
+async function renderTeacherGrades(){
+
+  await Promise.all([
+    loadStudents(),
+    loadTeachers(),
+    loadSubjects(),
+    loadGrades()
+  ]);
+
+  const assignments =
+    await loadTeacherAssignments();
+
+  if(!assignments.length){
+    document.getElementById(
+      "content"
+    ).innerHTML = `
+      <div class="card empty-state">
+        <h3>No assigned subjects</h3>
+        <p>You need a subject assignment before you can record grades.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const selectedAssignment =
+    assignments.find(
+      assignment =>
+        assignment.subject_id ===
+        state.selectedGradeSubjectId
+    ) || assignments[0];
+
+  state.selectedGradeSubjectId =
+    selectedAssignment.subject_id;
+
+  const subject =
+    selectedAssignment.subjects;
+
+  const students =
+    state.students.filter(
+      student =>
+        student.course_section ===
+        subject?.course_section
+    );
+
+  const gradeByStudent =
+    new Map(
+      state.grades
+        .filter(
+          record =>
+            record.subject_id ===
+            selectedAssignment.subject_id
+        )
+        .map(
+          record=>[
+            record.student_id,
+            record
+          ]
+        )
+    );
+
+  document.getElementById(
+    "content"
+  ).innerHTML = `
+
+    <div class="grade-hero teacher-grade-hero">
+      <div>
+        <div class="grade-hero-kicker">Teacher workspace</div>
+        <h2>Gradebook</h2>
+        <p>Choose a class and record each student’s final grade.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar grade-toolbar">
+        <select
+          id="gradeSubject"
+          onchange="changeGradeSubject(this.value)"
+          aria-label="Choose subject"
+        >
+          ${
+            assignments.map(
+              assignment=>`
+                <option
+                  value="${escapeHTML(assignment.subject_id)}"
+                  ${
+                    assignment.subject_id ===
+                    selectedAssignment.subject_id
+                    ? "selected"
+                    : ""
+                  }
+                >
+                  ${escapeHTML(
+                    assignment.subjects?.subject_code ||
+                    "Subject"
+                  )}
+                  —
+                  ${escapeHTML(
+                    assignment.subjects?.course_section ||
+                    "No section"
+                  )}
+                </option>
+              `
+            ).join("")
+          }
+        </select>
+
+        <div class="grade-subject-meta">
+          ${escapeHTML(subject?.subject_name || "")}
+          <span>${students.length} student${students.length === 1 ? "" : "s"}</span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Student ID</th>
+              <th>Final Grade</th>
+              <th>Remarks</th>
+              <th>Last Updated</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              students.length
+              ? students.map(student=>{
+                  const record =
+                    gradeByStudent.get(student.id);
+
+                  return `
+                    <tr>
+                      <td><strong>${escapeHTML(student.full_name)}</strong></td>
+                      <td>${escapeHTML(student.student_id_number)}</td>
+                      <td>
+                        ${
+                          record
+                          ? gradeChipHTML(record.grade)
+                          : `<span class="grade-empty">Not recorded</span>`
+                        }
+                      </td>
+                      <td>${escapeHTML(record?.remarks || "-")}</td>
+                      <td>${record ? formatDate(record.updated_at) : "-"}</td>
+                      <td>
+                        <button
+                          class="secondary-btn small-btn"
+                          onclick="openGradeModal('${student.id}','${selectedAssignment.subject_id}')"
+                        >
+                          ${record ? "Edit Grade" : "Record Grade"}
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join("")
+              : `
+                <tr>
+                  <td colspan="6">
+                    No students are enrolled in this section.
+                  </td>
+                </tr>
+              `
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+
+function changeGradeSubject(subjectId){
+
+  state.selectedGradeSubjectId =
+    subjectId;
+
+  renderTeacherGrades();
+}
+
+
+function openGradeModal(studentId,subjectId){
+
+  const student =
+    state.students.find(
+      item=>item.id === studentId
+    );
+
+  const subject =
+    state.subjects.find(
+      item=>item.id === subjectId
+    );
+
+  const existingGrade =
+    state.grades.find(
+      record =>
+        record.student_id === studentId &&
+        record.subject_id === subjectId
+    );
+
+  if(!student || !subject){
+    showToast(
+      "Unable to open this grade record.",
+      "error"
+    );
+    return;
+  }
+
+  openModal(`
+
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">
+          ${existingGrade ? "Edit Grade" : "Record Grade"}
+        </div>
+        <div class="modal-subtitle">
+          ${escapeHTML(student.full_name)} · ${escapeHTML(subject.subject_code)}
+        </div>
+      </div>
+      <button
+        class="close-btn"
+        type="button"
+        onclick="closeModal()"
+        aria-label="Close dialog"
+      >
+        ×
+      </button>
+    </div>
+
+    <form id="gradeForm">
+      <div class="form-group">
+        <label for="gradeValue">Final Grade</label>
+        <input
+          id="gradeValue"
+          type="number"
+          min="0"
+          max="100"
+          step="0.01"
+          value="${
+            existingGrade
+            ? escapeHTML(existingGrade.grade)
+            : ""
+          }"
+          placeholder="0–100"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="gradeRemarks">Remarks <span class="form-hint">optional</span></label>
+        <textarea
+          id="gradeRemarks"
+          rows="3"
+          maxlength="500"
+          placeholder="e.g. Completed all requirements"
+        >${escapeHTML(existingGrade?.remarks || "")}</textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="closeModal()"
+        >
+          Cancel
+        </button>
+        <button class="primary-btn">
+          ${existingGrade ? "Save Changes" : "Save Grade"}
+        </button>
+      </div>
+    </form>
+  `);
+
+  document
+    .getElementById("gradeForm")
+    .addEventListener(
+      "submit",
+      async event=>{
+
+        event.preventDefault();
+
+        try{
+
+          const grade =
+            Number(
+              document
+                .getElementById("gradeValue")
+                .value
+            );
+
+          if(
+            !Number.isFinite(grade) ||
+            grade < 0 ||
+            grade > 100
+          ){
+            throw new Error(
+              "Enter a grade from 0 to 100."
+            );
+          }
+
+          const teacher =
+            state.teachers.find(
+              item =>
+                item.auth_user_id ===
+                state.user.id
+            );
+
+          if(!teacher){
+            throw new Error(
+              "Teacher profile not found."
+            );
+          }
+
+          const values = {
+            student_id:studentId,
+            subject_id:subjectId,
+            graded_by:teacher.id,
+            grade,
+            remarks:
+              document
+                .getElementById("gradeRemarks")
+                .value
+                .trim() || null,
+            updated_at:
+              new Date().toISOString()
+          };
+
+          const result =
+            existingGrade
+            ? await db
+                .from("student_grades")
+                .update(values)
+                .eq("id",existingGrade.id)
+            : await db
+                .from("student_grades")
+                .insert(values);
+
+          if(result.error){
+            throw result.error;
+          }
+
+          await loadGrades();
+          closeModal();
+          await renderTeacherGrades();
+
+          showToast(
+            existingGrade
+              ? "Grade updated."
+              : "Grade saved.",
+            "success"
+          );
+
+        }catch(error){
+          showToast(
+            error.message ||
+            "Unable to save this grade.",
+            "error"
+          );
+        }
+
+      }
+    );
 }
 
 
@@ -5953,6 +8810,7 @@ async function renderStudentProfile(){
     document.getElementById(
       "content"
     ).innerHTML = `
+
       <div class="card">
         Student profile not found.
       </div>
@@ -5999,11 +8857,13 @@ async function renderStudentProfile(){
       </div>
 
 
-      <hr style="
-        border:0;
-        border-top:1px solid var(--border);
-        margin:20px 0
-      ">
+      <hr
+        style="
+          border:0;
+          border-top:1px solid var(--border);
+          margin:20px 0
+        "
+      >
 
 
       <div class="grid-2">
@@ -6014,7 +8874,9 @@ async function renderStudentProfile(){
             RFID UID
           </strong>
 
-          <p style="margin-top:8px">
+          <p
+            style="margin-top:8px"
+          >
             ${escapeHTML(
               student.rfid_uid
             )}
@@ -6029,7 +8891,9 @@ async function renderStudentProfile(){
             Account
           </strong>
 
-          <p style="margin-top:8px">
+          <p
+            style="margin-top:8px"
+          >
 
             ${
               student.auth_user_id
@@ -6065,7 +8929,9 @@ async function renderStudentAttendance(){
 
   const records =
     state.attendance.filter(
-      x=>x.student_id === student.id
+      x =>
+        x.student_id ===
+        student.id
     );
 
 
@@ -6144,25 +9010,40 @@ function filterStudentAttendance(){
 
 
   const records =
-    (window.studentRecords || [])
-      .filter(row=>{
+    (
+      window.studentRecords ||
+      []
+    ).filter(
+      row => {
 
         return (
-          (!date ||
-            String(row.timestamp)
-              .slice(0,10) === date
-          ) &&
-          (!status ||
-            row.status === status
+
+          (
+            !date ||
+            localDateString(
+              row.timestamp
+            ) === date
           )
+
+          &&
+
+          (
+            !status ||
+            row.status ===
+            status
+          )
+
         );
-      });
+      }
+    );
 
 
   document.getElementById(
     "studentAttendanceTable"
   ).innerHTML =
-    attendanceTableHTML(records);
+    attendanceTableHTML(
+      records
+    );
 }
 
 
@@ -6208,9 +9089,13 @@ async function renderReports(){
 
 
       <div id="reportResult">
-        <p style="color:var(--muted)">
+
+        <p
+          style="color:var(--muted)"
+        >
           Select a date range and generate a report.
         </p>
+
       </div>
 
     </div>
@@ -6221,28 +9106,62 @@ async function renderReports(){
 function generateReport(){
 
   const from =
-    document.getElementById(
-      "reportFrom"
-    ).value;
+    document
+      .getElementById(
+        "reportFrom"
+      )
+      .value;
 
   const to =
-    document.getElementById(
-      "reportTo"
-    ).value;
+    document
+      .getElementById(
+        "reportTo"
+      )
+      .value;
 
 
-  const records =
-    state.attendance.filter(row=>{
+  let records =
+    state.attendance.filter(
+      row => {
 
-      const date =
-        String(row.timestamp)
-          .slice(0,10);
+        const date =
+          localDateString(
+            row.timestamp
+          );
 
-      return (
-        (!from || date >= from) &&
-        (!to || date <= to)
+        return (
+          (!from ||
+            date >= from) &&
+
+          (!to ||
+            date <= to)
+        );
+      }
+    );
+
+
+  if(
+    state.profile.role ===
+    "teacher"
+  ){
+
+    const teacher =
+      state.teachers.find(
+        t =>
+          t.auth_user_id ===
+          state.user.id
       );
-    });
+
+    if(teacher){
+
+      records =
+        records.filter(
+          row =>
+            row.teacher_id ===
+            teacher.id
+        );
+    }
+  }
 
 
   document.getElementById(
@@ -6268,7 +9187,9 @@ function generateReport(){
     </div>
 
 
-    ${attendanceTableHTML(records)}
+    ${attendanceTableHTML(
+      records
+    )}
 
   `;
 
@@ -6293,7 +9214,9 @@ async function renderLogs(){
       .select("*")
       .order(
         "created_at",
-        {ascending:false}
+        {
+          ascending:false
+        }
       )
       .limit(200);
 
@@ -6337,47 +9260,57 @@ async function renderLogs(){
 
             ${
               state.logs.length
-              ? state.logs.map(log=>`
 
-                <tr>
+              ? state.logs.map(
+                  log => `
 
-                  <td>
-                    ${formatDate(
-                      log.created_at
-                    )}
-                    <br>
-                    ${formatTime(
-                      log.created_at
-                    )}
-                  </td>
+                    <tr>
 
-                  <td>
-                    ${escapeHTML(
-                      log.action
-                    )}
-                  </td>
+                      <td>
 
-                  <td>
-                    ${escapeHTML(
-                      log.description
-                    )}
-                  </td>
+                        ${formatDate(
+                          log.created_at
+                        )}
 
-                  <td>
-                    ${escapeHTML(
-                      log.user_id || "-"
-                    )}
-                  </td>
+                        <br>
 
-                </tr>
+                        ${formatTime(
+                          log.created_at
+                        )}
 
-              `).join("")
+                      </td>
+
+                      <td>
+                        ${escapeHTML(
+                          log.action
+                        )}
+                      </td>
+
+                      <td>
+                        ${escapeHTML(
+                          log.description
+                        )}
+                      </td>
+
+                      <td>
+                        ${escapeHTML(
+                          log.user_id ||
+                          "-"
+                        )}
+                      </td>
+
+                    </tr>
+                  `
+                ).join("")
+
               : `
+
                 <tr>
                   <td colspan="4">
                     No activity logs.
                   </td>
                 </tr>
+
               `
             }
 
@@ -6399,12 +9332,21 @@ async function logActivity(
 
   try{
 
+    if(!state.user){
+      return;
+    }
+
     await db
       .from("activity_logs")
       .insert({
-        user_id:state.user.id,
+
+        user_id:
+          state.user.id,
+
         action,
+
         description
+
       });
 
   }catch(error){
@@ -6467,7 +9409,8 @@ async function renderSettings(){
             <input
               id="schoolName"
               value="${escapeHTML(
-                settings.school_name || ""
+                settings.school_name ||
+                ""
               )}"
             >
 
@@ -6483,7 +9426,8 @@ async function renderSettings(){
             <input
               id="schoolYear"
               value="${escapeHTML(
-                settings.school_year || ""
+                settings.school_year ||
+                ""
               )}"
               placeholder="2026-2027"
             >
@@ -6497,18 +9441,30 @@ async function renderSettings(){
               Semester
             </label>
 
-            <select id="schoolSemester">
+            <select
+              id="schoolSemester"
+            >
 
               <option
                 value="1st Semester"
-                ${settings.semester==="1st Semester"?"selected":""}
+                ${
+                  settings.semester ===
+                  "1st Semester"
+                  ? "selected"
+                  : ""
+                }
               >
                 1st Semester
               </option>
 
               <option
                 value="2nd Semester"
-                ${settings.semester==="2nd Semester"?"selected":""}
+                ${
+                  settings.semester ===
+                  "2nd Semester"
+                  ? "selected"
+                  : ""
+                }
               >
                 2nd Semester
               </option>
@@ -6528,7 +9484,8 @@ async function renderSettings(){
               id="attendanceStart"
               type="time"
               value="${escapeHTML(
-                settings.attendance_start || "18:00"
+                settings.attendance_start ||
+                "18:00"
               )}"
             >
 
@@ -6545,7 +9502,8 @@ async function renderSettings(){
               id="lateTime"
               type="time"
               value="${escapeHTML(
-                settings.late_time || "18:15"
+                settings.late_time ||
+                "18:15"
               )}"
             >
 
@@ -6562,7 +9520,8 @@ async function renderSettings(){
               id="attendanceEnd"
               type="time"
               value="${escapeHTML(
-                settings.attendance_end || "05:59"
+                settings.attendance_end ||
+                "05:59"
               )}"
             >
 
@@ -6571,7 +9530,9 @@ async function renderSettings(){
         </div>
 
 
-        <button class="primary-btn">
+        <button
+          class="primary-btn"
+        >
           Save Settings
         </button>
 
@@ -6582,7 +9543,9 @@ async function renderSettings(){
 
 
   document
-    .getElementById("settingsForm")
+    .getElementById(
+      "settingsForm"
+    )
     .addEventListener(
       "submit",
       async e=>{
@@ -6594,37 +9557,52 @@ async function renderSettings(){
           const values = {
 
             school_name:
-              document.getElementById(
-                "schoolName"
-              ).value.trim(),
+              document
+                .getElementById(
+                  "schoolName"
+                )
+                .value
+                .trim(),
 
             school_year:
-              document.getElementById(
-                "schoolYear"
-              ).value.trim(),
+              document
+                .getElementById(
+                  "schoolYear"
+                )
+                .value
+                .trim(),
 
             semester:
-              document.getElementById(
-                "schoolSemester"
-              ).value,
+              document
+                .getElementById(
+                  "schoolSemester"
+                )
+                .value,
 
             attendance_start:
-              document.getElementById(
-                "attendanceStart"
-              ).value,
+              document
+                .getElementById(
+                  "attendanceStart"
+                )
+                .value,
 
             late_time:
-              document.getElementById(
-                "lateTime"
-              ).value,
+              document
+                .getElementById(
+                  "lateTime"
+                )
+                .value,
 
             attendance_end:
-              document.getElementById(
-                "attendanceEnd"
-              ).value,
+              document
+                .getElementById(
+                  "attendanceEnd"
+                )
+                .value,
 
             updated_at:
               new Date().toISOString()
+
           };
 
 
@@ -6635,7 +9613,9 @@ async function renderSettings(){
 
             result =
               await db
-                .from("school_settings")
+                .from(
+                  "school_settings"
+                )
                 .update(values)
                 .eq(
                   "id",
@@ -6646,7 +9626,9 @@ async function renderSettings(){
 
             result =
               await db
-                .from("school_settings")
+                .from(
+                  "school_settings"
+                )
                 .insert(values);
           }
 
@@ -6679,7 +9661,10 @@ async function renderSettings(){
 
 function exportAttendanceExcel(records){
 
-  if(!records || !records.length){
+  if(
+    !records ||
+    !records.length
+  ){
 
     showToast(
       "No attendance data to export.",
@@ -6691,58 +9676,63 @@ function exportAttendanceExcel(records){
 
 
   const rows =
-    records.map(row=>({
+    records.map(
+      row => ({
 
-      Date:
-        formatDate(
-          row.timestamp
-        ),
+        Date:
+          formatDate(
+            row.timestamp
+          ),
 
-      Time:
-        formatTime(
-          row.timestamp
-        ),
+        Time:
+          formatTime(
+            row.timestamp
+          ),
 
-      "Student ID":
-        row.students?.student_id_number ||
-        "",
+        "Student ID":
+          row.students?.student_id_number ||
+          "",
 
-      Student:
-        row.students?.full_name ||
-        "",
+        Student:
+          row.students?.full_name ||
+          "",
 
-      "Course / Section":
-        row.students?.course_section ||
-        "",
+        "Course / Section":
+          row.students?.course_section ||
+          "",
 
-      Subject:
-        row.subjects?.subject_code ||
-        "",
+        Subject:
+          row.subjects?.subject_code ||
+          "",
 
-      "Subject Name":
-        row.subjects?.subject_name ||
-        "",
+        "Subject Name":
+          row.subjects?.subject_name ||
+          "",
 
-      Status:
-        row.status ||
-        "",
+        Status:
+          row.status ||
+          "",
 
-      "RFID UID":
-        row.scanned_rfid ||
-        "",
+        "RFID UID":
+          row.scanned_rfid ||
+          "",
 
-      "Reader ID":
-        row.reader_id ||
-        ""
+        "Reader ID":
+          row.reader_id ||
+          ""
 
-    }));
+      })
+    );
 
 
   const worksheet =
-    XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.json_to_sheet(
+      rows
+    );
 
   const workbook =
     XLSX.utils.book_new();
+
 
   XLSX.utils.book_append_sheet(
     workbook,
@@ -6770,7 +9760,10 @@ function exportAttendanceExcel(records){
 
 function exportAttendancePDF(records){
 
-  if(!records || !records.length){
+  if(
+    !records ||
+    !records.length
+  ){
 
     showToast(
       "No attendance data to export.",
@@ -6809,32 +9802,34 @@ function exportAttendancePDF(records){
 
 
   const rows =
-    records.map(row=>[
+    records.map(
+      row => [
 
-      formatDate(
-        row.timestamp
-      ),
+        formatDate(
+          row.timestamp
+        ),
 
-      formatTime(
-        row.timestamp
-      ),
+        formatTime(
+          row.timestamp
+        ),
 
-      row.students?.student_id_number ||
-      "",
+        row.students?.student_id_number ||
+        "",
 
-      row.students?.full_name ||
-      "",
+        row.students?.full_name ||
+        "",
 
-      row.subjects?.subject_code ||
-      "",
+        row.subjects?.subject_code ||
+        "",
 
-      row.status ||
-      "",
+        row.status ||
+        "",
 
-      row.reader_id ||
-      ""
+        row.reader_id ||
+        ""
 
-    ]);
+      ]
+    );
 
 
   doc.autoTable({
@@ -6842,6 +9837,7 @@ function exportAttendancePDF(records){
     startY:32,
 
     head:[[
+
       "Date",
       "Time",
       "Student ID",
@@ -6849,6 +9845,7 @@ function exportAttendancePDF(records){
       "Subject",
       "Status",
       "Reader"
+
     ]],
 
     body:rows,
@@ -6879,7 +9876,9 @@ function exportAttendancePDF(records){
 function subscribeRealtime(){
 
   db
-    .channel("attendance-live")
+    .channel(
+      "attendance-live"
+    )
     .on(
       "postgres_changes",
       {
@@ -6905,12 +9904,18 @@ function subscribeRealtime(){
             "attendance"
           ){
 
-            document.getElementById(
-              "attendanceTable"
-            ).innerHTML =
-              attendanceTableHTML(
-                state.attendance
+            const element =
+              document.getElementById(
+                "attendanceTable"
               );
+
+            if(element){
+
+              element.innerHTML =
+                attendanceTableHTML(
+                  state.attendance
+                );
+            }
 
           }
 
@@ -6927,9 +9932,25 @@ function subscribeRealtime(){
 
             if(element){
 
+              const teacher =
+                state.teachers.find(
+                  t =>
+                    t.auth_user_id ===
+                    state.user?.id
+                );
+
+              const records =
+                teacher
+                  ? state.attendance.filter(
+                      row =>
+                        row.teacher_id ===
+                        teacher.id
+                    )
+                  : [];
+
               element.innerHTML =
                 attendanceTableHTML(
-                  state.attendance
+                  records
                 );
             }
 
@@ -6937,7 +9958,9 @@ function subscribeRealtime(){
 
         }catch(error){
 
-          console.error(error);
+          console.error(
+            error
+          );
         }
 
       }
@@ -6946,7 +9969,9 @@ function subscribeRealtime(){
 
 
   db
-    .channel("rooms-live")
+    .channel(
+      "rooms-live"
+    )
     .on(
       "postgres_changes",
       {
@@ -6955,11 +9980,18 @@ function subscribeRealtime(){
         table:"rooms"
       },
       async()=>{
+
         try{
+
           await loadRooms();
+
         }catch(error){
-          console.error(error);
+
+          console.error(
+            error
+          );
         }
+
       }
     )
     .subscribe();
@@ -6977,11 +10009,25 @@ document
   .addEventListener(
     "click",
     ()=>{
+
+      const isOpen =
+        document
+          .getElementById(
+            "sidebar"
+          )
+          .classList.toggle(
+            "open"
+          );
+
       document
         .getElementById(
-          "sidebar"
+          "mobileMenuBtn"
         )
-        .classList.toggle("open");
+        .setAttribute(
+          "aria-expanded",
+          String(isOpen)
+        );
+
     }
   );
 
@@ -7002,8 +10048,10 @@ document
 
       state.user = null;
       state.profile = null;
+      state.currentSession = null;
 
       showLogin();
+
     }
   );
 
