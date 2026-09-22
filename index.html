@@ -1403,6 +1403,50 @@ tr:hover td{
   font-weight:500;
 }
 
+.helper-text{
+  margin:0;
+  color:var(--muted);
+  font-size:.86rem;
+}
+
+.request-reason{
+  max-width:290px;
+  white-space:normal;
+  line-height:1.45;
+}
+
+.review-summary{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:0 0 20px;
+}
+
+.review-summary > div,
+.review-summary p{
+  margin:0;
+  padding:13px 14px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fafafb;
+}
+
+.review-summary > div span{
+  display:block;
+  margin-bottom:6px;
+  color:var(--muted);
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.review-summary p{
+  grid-column:1 / -1;
+  color:#42424d;
+  line-height:1.5;
+}
+
 .empty-state{
   padding:36px;
   text-align:center;
@@ -1514,6 +1558,10 @@ tr:hover td{
 
   .grade-toolbar select{
     flex-basis:100%;
+  }
+
+  .review-summary{
+    grid-template-columns:1fr;
   }
 
   .toast-container{
@@ -2876,6 +2924,7 @@ async function loadCorrectionRequests(){
         ),
         attendance_records (
           id,
+          teacher_id,
           status,
           timestamp,
           subjects (
@@ -9220,12 +9269,256 @@ function filterStudentAttendance(){
 
 
 /* =========================================================
+   ATTENDANCE CORRECTIONS
+========================================================= */
+
+async function renderCorrectionRequests(){
+
+  await Promise.all([
+    loadCorrectionRequests(),
+    loadTeachers()
+  ]);
+
+  let requests =
+    state.correctionRequests;
+
+  if(state.profile.role === "teacher"){
+
+    const teacher =
+      state.teachers.find(
+        item => item.auth_user_id === state.user.id
+      );
+
+    requests = requests.filter(
+      request =>
+        request.attendance_records?.teacher_id === teacher?.id
+    );
+  }
+
+  const pending =
+    requests.filter(
+      request => request.status === "pending"
+    ).length;
+
+  document.getElementById("content").innerHTML = `
+    <div class="stats-grid correction-stats">
+      <div class="stat-card">
+        <div class="stat-label">Pending review</div>
+        <div class="stat-value">${pending}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Resolved</div>
+        <div class="stat-value">${requests.length - pending}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">All requests</div>
+        <div class="stat-value">${requests.length}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div>
+          <div class="card-title" style="margin-bottom:4px">Attendance Correction Requests</div>
+          <p class="helper-text">Review requests before changing the original attendance record.</p>
+        </div>
+        <select id="correctionFilter" onchange="filterCorrectionRequests()" aria-label="Filter requests by status">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div id="correctionRequestTable">
+        ${correctionRequestsTableHTML(requests)}
+      </div>
+    </div>
+  `;
+
+  window.visibleCorrectionRequests = requests;
+}
+
+
+function correctionRequestsTableHTML(requests){
+
+  return `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Attendance record</th>
+            <th>Requested change</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Requested</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            requests.length
+            ? requests.map(request=>`
+              <tr>
+                <td>
+                  <strong>${escapeHTML(request.students?.full_name || "-")}</strong>
+                  <div class="table-subtext">${escapeHTML(request.students?.student_id_number || "-")}</div>
+                </td>
+                <td>
+                  ${formatDate(request.attendance_records?.timestamp)}
+                  <div class="table-subtext">
+                    ${escapeHTML(request.attendance_records?.subjects?.subject_code || "Attendance")} · ${escapeHTML(request.attendance_records?.status || "-")}
+                  </div>
+                </td>
+                <td>${statusBadge(request.requested_status)}</td>
+                <td class="request-reason">${escapeHTML(request.reason)}</td>
+                <td>${correctionStatusBadge(request.status)}</td>
+                <td>${formatDate(request.created_at)}</td>
+                <td>
+                  ${
+                    request.status === "pending"
+                    ? `<button class="secondary-btn small-btn" onclick="openCorrectionReviewModal('${request.id}')">Review</button>`
+                    : `<span class="table-subtext">${escapeHTML(request.review_note || "Reviewed")}</span>`
+                  }
+                </td>
+              </tr>
+            `).join("")
+            : `<tr><td colspan="7">No correction requests found.</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+
+function filterCorrectionRequests(){
+
+  const filter =
+    document.getElementById("correctionFilter").value;
+
+  const requests =
+    (window.visibleCorrectionRequests || []).filter(
+      request => !filter || request.status === filter
+    );
+
+  document.getElementById("correctionRequestTable").innerHTML =
+    correctionRequestsTableHTML(requests);
+}
+
+
+function openCorrectionReviewModal(requestId){
+
+  const request =
+    state.correctionRequests.find(
+      item => item.id === requestId
+    );
+
+  if(!request){
+    showToast("Correction request not found.","error");
+    return;
+  }
+
+  openModal(`
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Review Correction Request</div>
+        <div class="modal-subtitle">${escapeHTML(request.students?.full_name || "Student")} · ${formatDate(request.attendance_records?.timestamp)}</div>
+      </div>
+      <button class="close-btn" type="button" onclick="closeModal()" aria-label="Close dialog">×</button>
+    </div>
+    <div class="review-summary">
+      <div><span>Recorded</span>${statusBadge(request.attendance_records?.status)}</div>
+      <div><span>Requested</span>${statusBadge(request.requested_status)}</div>
+      <p>${escapeHTML(request.reason)}</p>
+    </div>
+    <form id="correctionReviewForm">
+      <div class="form-group">
+        <label for="correctionDecision">Decision</label>
+        <select id="correctionDecision" required>
+          <option value="approved">Approve request</option>
+          <option value="rejected">Reject request</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="correctionReviewNote">Review note <span class="form-hint">optional</span></label>
+        <textarea id="correctionReviewNote" rows="3" maxlength="500" placeholder="Add context for the student."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" onclick="closeModal()">Cancel</button>
+        <button class="primary-btn">Save Decision</button>
+      </div>
+    </form>
+  `);
+
+  document.getElementById("correctionReviewForm")
+    .addEventListener("submit",async event=>{
+      event.preventDefault();
+
+      try{
+        const decision = document.getElementById("correctionDecision").value;
+        const reviewNote = document.getElementById("correctionReviewNote").value.trim() || null;
+        const reviewValues = {
+          status:decision,
+          reviewer_user_id:state.user.id,
+          review_note:reviewNote,
+          reviewed_at:new Date().toISOString()
+        };
+
+        const {error:requestError} = await db
+          .from("attendance_correction_requests")
+          .update(reviewValues)
+          .eq("id",request.id);
+
+        if(requestError){
+          throw requestError;
+        }
+
+        if(decision === "approved"){
+          const {error:attendanceError} = await db
+            .from("attendance_records")
+            .update({status:request.requested_status})
+            .eq("id",request.attendance_record_id);
+
+          if(attendanceError){
+            throw attendanceError;
+          }
+        }
+
+        closeModal();
+        await renderCorrectionRequests();
+        showToast(
+          decision === "approved"
+            ? "Request approved and attendance updated."
+            : "Request rejected.",
+          "success"
+        );
+      }catch(error){
+        showToast(error.message || "Unable to review this request.","error");
+      }
+    });
+}
+
+
+/* =========================================================
    REPORTS
 ========================================================= */
 
 async function renderReports(){
 
-  await loadAttendance();
+  await Promise.all([
+    loadAttendance(),
+    loadSubjects(),
+    loadStudents(),
+    loadTeachers()
+  ]);
+
+  const subjectOptions =
+    state.subjects.map(subject=>`
+      <option value="${subject.id}">
+        ${escapeHTML(subject.subject_code)} — ${escapeHTML(subject.subject_name)}
+      </option>
+    `).join("");
 
   document.getElementById(
     "content"
@@ -9250,6 +9543,26 @@ async function renderReports(){
           type="date"
         >
 
+        <select id="reportSubject" aria-label="Filter report by subject">
+          <option value="">All subjects</option>
+          ${subjectOptions}
+        </select>
+
+        <select id="reportStatus" aria-label="Filter report by attendance status">
+          <option value="">All statuses</option>
+          <option value="Present">Present</option>
+          <option value="Late">Late</option>
+          <option value="Absent">Absent</option>
+          <option value="Time Out">Time Out</option>
+        </select>
+
+        <input
+          id="reportStudent"
+          type="search"
+          placeholder="Search student"
+          aria-label="Search report by student"
+        >
+
         <button
           class="primary-btn"
           onclick="generateReport()"
@@ -9265,7 +9578,7 @@ async function renderReports(){
         <p
           style="color:var(--muted)"
         >
-          Select a date range and generate a report.
+          Choose filters and generate a report. You can export the matching records afterwards.
         </p>
 
       </div>
@@ -9291,6 +9604,15 @@ function generateReport(){
       )
       .value;
 
+  const subjectId =
+    document.getElementById("reportSubject").value;
+
+  const status =
+    document.getElementById("reportStatus").value;
+
+  const studentQuery =
+    document.getElementById("reportStudent").value.trim().toLowerCase();
+
 
   let records =
     state.attendance.filter(
@@ -9306,7 +9628,19 @@ function generateReport(){
             date >= from) &&
 
           (!to ||
-            date <= to)
+            date <= to) &&
+
+          (!subjectId ||
+            row.subject_id === subjectId ||
+            row.subjects?.id === subjectId) &&
+
+          (!status ||
+            row.status === status) &&
+
+          (!studentQuery ||
+            `${row.students?.full_name || ""} ${row.students?.student_id_number || ""}`
+              .toLowerCase()
+              .includes(studentQuery))
         );
       }
     );
@@ -9336,9 +9670,34 @@ function generateReport(){
   }
 
 
+  const onTime = records.filter(row=>row.status === "Present").length;
+  const late = records.filter(row=>row.status === "Late").length;
+  const uniqueStudents = new Set(
+    records.map(row=>row.student_id)
+  ).size;
+
   document.getElementById(
     "reportResult"
   ).innerHTML = `
+
+    <div class="stats-grid correction-stats">
+      <div class="stat-card">
+        <div class="stat-label">Matching records</div>
+        <div class="stat-value">${records.length}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Present on time</div>
+        <div class="stat-value">${onTime}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Late arrivals</div>
+        <div class="stat-value">${late}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Students included</div>
+        <div class="stat-value">${uniqueStudents}</div>
+      </div>
+    </div>
 
     <div class="toolbar">
 
