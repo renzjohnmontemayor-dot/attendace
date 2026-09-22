@@ -1723,6 +1723,7 @@ const state = {
   subjects:[],
   rooms:[],
   attendance:[],
+  correctionRequests:[],
   grades:[],
   assignments:[],
   logs:[],
@@ -2365,6 +2366,10 @@ function buildNavigation(){
         Attendance Monitoring
       </button>
 
+      <button onclick="loadPage('corrections')">
+        Correction Requests
+      </button>
+
       <button onclick="loadPage('reports')">
         Reports
       </button>
@@ -2397,6 +2402,10 @@ function buildNavigation(){
 
       <button onclick="loadPage('teacherAttendance')">
         Class Attendance
+      </button>
+
+      <button onclick="loadPage('corrections')">
+        Correction Requests
       </button>
 
       <button onclick="loadPage('teacherStudents')">
@@ -2538,6 +2547,7 @@ async function loadPage(page){
     rooms:"RFID Rooms",
     assignments:"Teacher Assignments",
     attendance:"Attendance Monitoring",
+    corrections:"Correction Requests",
     reports:"Reports",
     logs:"Activity Log",
     grades:
@@ -2590,6 +2600,10 @@ async function loadPage(page){
 
       case "attendance":
         await renderAttendance();
+        break;
+
+      case "corrections":
+        await renderCorrectionRequests();
         break;
 
       case "reports":
@@ -2841,6 +2855,45 @@ async function loadAttendance(){
     data || [];
 
   return state.attendance;
+}
+
+
+async function loadCorrectionRequests(){
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("attendance_correction_requests")
+      .select(`
+        *,
+        students (
+          id,
+          student_id_number,
+          full_name,
+          course_section
+        ),
+        attendance_records (
+          id,
+          status,
+          timestamp,
+          subjects (
+            subject_code,
+            subject_name
+          )
+        )
+      `)
+      .order("created_at",{ascending:false});
+
+  if(error){
+    throw error;
+  }
+
+  state.correctionRequests =
+    data || [];
+
+  return state.correctionRequests;
 }
 
 
@@ -8972,6 +9025,14 @@ async function renderStudentAttendance(){
 
         </select>
 
+        <button
+          class="secondary-btn"
+          type="button"
+          onclick="openCorrectionRequestModal()"
+        >
+          Request a Correction
+        </button>
+
       </div>
 
 
@@ -8989,6 +9050,117 @@ async function renderStudentAttendance(){
 
   window.studentRecords =
     records;
+}
+
+
+function correctionStatusBadge(status){
+
+  const value =
+    String(status || "pending").toLowerCase();
+
+  const className =
+    value === "approved"
+      ? "badge-present"
+      : value === "rejected"
+        ? "badge-absent"
+        : "badge-late";
+
+  return `
+    <span class="badge ${className}">
+      ${escapeHTML(value)}
+    </span>
+  `;
+}
+
+
+function openCorrectionRequestModal(){
+
+  const records =
+    window.studentRecords || [];
+
+  if(!records.length){
+    showToast("No attendance record is available to correct.","warning");
+    return;
+  }
+
+  openModal(`
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Request Attendance Correction</div>
+        <div class="modal-subtitle">Your teacher or an administrator will review this request.</div>
+      </div>
+      <button class="close-btn" type="button" onclick="closeModal()" aria-label="Close dialog">×</button>
+    </div>
+
+    <form id="correctionRequestForm">
+      <div class="form-group">
+        <label for="correctionRecord">Attendance record</label>
+        <select id="correctionRecord" required>
+          ${records.map(row=>`
+            <option value="${escapeHTML(row.id)}">
+              ${escapeHTML(formatDate(row.timestamp))} — ${escapeHTML(row.subjects?.subject_code || "Attendance")} — ${escapeHTML(row.status)}
+            </option>
+          `).join("")}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="correctionStatus">Requested status</label>
+        <select id="correctionStatus" required>
+          <option value="Present">Present</option>
+          <option value="Late">Late</option>
+          <option value="Absent">Absent</option>
+          <option value="Time Out">Time Out</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="correctionReason">Reason</label>
+        <textarea id="correctionReason" rows="4" minlength="10" maxlength="500" placeholder="Explain what needs to be corrected." required></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" onclick="closeModal()">Cancel</button>
+        <button class="primary-btn">Submit Request</button>
+      </div>
+    </form>
+  `);
+
+  document
+    .getElementById("correctionRequestForm")
+    .addEventListener("submit",async event=>{
+
+      event.preventDefault();
+
+      try{
+        const student = await getCurrentStudent();
+        const attendanceRecordId = document.getElementById("correctionRecord").value;
+        const reason = document.getElementById("correctionReason").value.trim();
+
+        if(reason.length < 10){
+          throw new Error("Please provide at least 10 characters explaining the request.");
+        }
+
+        const {error} = await db
+          .from("attendance_correction_requests")
+          .insert({
+            attendance_record_id:attendanceRecordId,
+            student_id:student.id,
+            requester_user_id:state.user.id,
+            requested_status:document.getElementById("correctionStatus").value,
+            reason
+          });
+
+        if(error){
+          throw error;
+        }
+
+        closeModal();
+        showToast("Correction request submitted.","success");
+      }catch(error){
+        showToast(error.message || "Unable to submit request.","error");
+      }
+    });
 }
 
 
