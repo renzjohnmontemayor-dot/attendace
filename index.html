@@ -73,6 +73,28 @@ textarea:focus-visible{
   display:none!important;
 }
 
+.sr-only{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+
+#rfidScanForm{
+  display:flex;
+  gap:10px;
+}
+
+#rfidScanForm input{
+  min-width:0;
+  flex:1;
+}
+
 /* LOGIN */
 
 .login-screen{
@@ -1531,6 +1553,14 @@ tr:hover td{
     width:100%;
   }
 
+  #rfidScanForm{
+    flex-direction:column;
+  }
+
+  #rfidScanForm .primary-btn{
+    width:100%;
+  }
+
   .modal{
     align-items:flex-end;
     padding:10px;
@@ -1765,6 +1795,7 @@ const db =
 
 const state = {
   user:null,
+  session:null,
   profile:null,
   students:[],
   teachers:[],
@@ -1779,6 +1810,8 @@ const state = {
   selectedStudent:null,
   selectedGradeSubjectId:null,
   currentSession:null,
+  rfidScanTimer:null,
+  lastRFIDScan:null,
   lastFocusedElement:null
 };
 
@@ -2005,6 +2038,96 @@ function statusBadge(status){
 }
 
 
+/* =========================================================
+   RFID AUTO-SCAN HELPER
+========================================================= */
+
+const rfidAutoScanTimers = {};
+
+function setupRFIDAutoScan(inputId,statusId){
+
+  const input =
+    document.getElementById(inputId);
+
+  if(!input){
+    return;
+  }
+
+  input.addEventListener("keydown",e=>{
+
+    if(e.key === "Enter"){
+
+      e.preventDefault();
+    }
+
+  });
+
+  input.addEventListener("input",()=>{
+
+    clearTimeout(
+      rfidAutoScanTimers[inputId]
+    );
+
+    const value =
+      input.value.trim();
+
+    const status =
+      statusId
+        ? document.getElementById(statusId)
+        : null;
+
+    if(value.length < 4){
+
+      if(status){
+
+        status.textContent =
+          "Tap or scan an RFID card here.";
+      }
+
+      return;
+    }
+
+    rfidAutoScanTimers[inputId] =
+      setTimeout(()=>{
+
+        if(status){
+
+          status.textContent =
+            "Card scanned: " + value;
+        }
+
+      },400);
+
+  });
+}
+
+
+function clearAndRescanField(inputId,statusId){
+
+  const input =
+    document.getElementById(inputId);
+
+  if(!input){
+    return;
+  }
+
+  input.value = "";
+
+  input.focus();
+
+  const status =
+    statusId
+      ? document.getElementById(statusId)
+      : null;
+
+  if(status){
+
+    status.textContent =
+      "Waiting for a new card scan…";
+  }
+}
+
+
 function getInitials(name){
 
   if(!name){
@@ -2054,6 +2177,12 @@ function photoHTML(student){
   const url =
     studentPhoto(student);
 
+  const photoPath =
+    student?.photo_path &&
+    !student.photo_path.startsWith("http")
+      ? student.photo_path
+      : "";
+
   if(url){
 
     return `
@@ -2061,7 +2190,9 @@ function photoHTML(student){
         src="${escapeHTML(url)}"
         class="profile-photo"
         alt="Student Photo"
-        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+        data-photo-path="${escapeHTML(photoPath)}"
+        data-signed-tried="0"
+        onerror="handlePhotoError(this)"
       >
 
       <div
@@ -2109,6 +2240,80 @@ function photoHTML(student){
 
 
 /* =========================================================
+   PHOTO LOAD FALLBACK
+   If the public URL 400s (bucket isn't marked Public), try a
+   signed URL instead before giving up and showing initials.
+========================================================= */
+
+async function handlePhotoError(imgEl){
+
+  const photoPath =
+    imgEl.dataset.photoPath;
+
+  const alreadyTriedSigned =
+    imgEl.dataset.signedTried === "1";
+
+  if(photoPath && !alreadyTriedSigned){
+
+    imgEl.dataset.signedTried = "1";
+
+    try{
+
+      const {
+        data,
+        error
+      } =
+        await db.storage
+          .from("student-photos")
+          .createSignedUrl(
+            photoPath,
+            3600
+          );
+
+      if(!error && data?.signedUrl){
+
+        imgEl.onerror =
+          ()=>{
+
+            imgEl.style.display =
+              "none";
+
+            if(imgEl.nextElementSibling){
+
+              imgEl.nextElementSibling
+                .style.display =
+                "flex";
+            }
+          };
+
+        imgEl.src =
+          data.signedUrl;
+
+        return;
+      }
+
+    }catch(error){
+
+      console.warn(
+        "Signed photo URL fallback failed:",
+        error
+      );
+    }
+  }
+
+  imgEl.style.display =
+    "none";
+
+  if(imgEl.nextElementSibling){
+
+    imgEl.nextElementSibling
+      .style.display =
+      "flex";
+  }
+}
+
+
+/* =========================================================
    EDGE FUNCTION
 ========================================================= */
 
@@ -2119,14 +2324,36 @@ async function callFunction(
 
   const {
     data:{
-      session
+      session:storedSession
     }
   } =
     await db.auth.getSession();
 
+  let session =
+    storedSession ||
+    state.session;
+
+  const {
+    data:refreshData,
+    error:refreshError
+  } =
+    await db.auth.refreshSession();
+
+  if(refreshData?.session){
+    session = refreshData.session;
+    state.session = session;
+    state.user = session.user;
+  }
+
   if(!session){
     throw new Error(
-      "Not authenticated"
+      "Your sign-in session has expired. Refresh the page and sign in again."
+    );
+  }
+
+  if(refreshError){
+    throw new Error(
+      "Your sign-in session has expired. Refresh the page and sign in again."
     );
   }
 
@@ -2136,11 +2363,9 @@ async function callFunction(
       {
         method:"POST",
         headers:{
-          "Content-Type":
-            "application/json",
-          "Authorization":
-            "Bearer " +
-            session.access_token
+          "Content-Type":"application/json",
+          "apikey":SUPABASE_KEY,
+          "Authorization":"Bearer " + session.access_token
         },
         body:JSON.stringify({
           action,
@@ -2150,14 +2375,13 @@ async function callFunction(
     );
 
   const result =
-    await response.json();
+    await response.json().catch(()=>({}));
 
   if(!response.ok){
-
     throw new Error(
       result.error ||
       result.message ||
-      "Edge Function error"
+      "The account action could not be completed."
     );
   }
 
@@ -2205,6 +2429,10 @@ document
 
         state.user =
           data.user;
+
+        state.session =
+          data.session ||
+          null;
 
         await loadUser();
 
@@ -2287,6 +2515,9 @@ async function checkSession(){
     state.user =
       data.session.user;
 
+    state.session =
+      data.session;
+
     try{
 
       await loadUser();
@@ -2311,9 +2542,15 @@ db.auth.onAuthStateChange(
     ){
 
       state.user = null;
+      state.session = null;
       state.profile = null;
 
       showLogin();
+
+    }else if(session){
+
+      state.user = session.user;
+      state.session = session;
     }
 
   }
@@ -2384,6 +2621,10 @@ function buildNavigation(){
 
       <button onclick="loadPage('students')">
         Student Records
+      </button>
+
+      <button onclick="loadPage('accountLinks')">
+        Account Links
       </button>
 
       <button onclick="loadPage('teachers')">
@@ -2590,6 +2831,7 @@ async function loadPage(page){
 
     dashboard:"Dashboard",
     students:"Student Records",
+    accountLinks:"Account Links",
     teachers:"Teacher Accounts",
     subjects:"Subject Management",
     rooms:"RFID Rooms",
@@ -2628,6 +2870,10 @@ async function loadPage(page){
 
       case "students":
         await renderStudents();
+        break;
+
+      case "accountLinks":
+        await renderAccountLinks();
         break;
 
       case "teachers":
@@ -3501,7 +3747,7 @@ async function renderStudentDashboard(){
             color:var(--muted)
           "
         >
-          Your account is not linked to a student record.
+          Your account is not linked to a student record. An administrator can fix this in Account Links.
         </p>
 
       </div>
@@ -3659,6 +3905,146 @@ async function getCurrentStudent(){
 
 
 /* =========================================================
+   STUDENT ACCOUNT LINKS
+========================================================= */
+
+async function renderAccountLinks(){
+
+  if(state.profile?.role !== "admin"){
+    throw new Error("Only administrators can manage account links.");
+  }
+
+  const [studentsResult,profilesResult] = await Promise.all([
+    db.from("students").select("id,student_id_number,full_name,course_section,auth_user_id").order("full_name"),
+    db.from("profiles").select("id,name,role").eq("role","student").order("name")
+  ]);
+
+  if(studentsResult.error){
+    throw studentsResult.error;
+  }
+
+  if(profilesResult.error){
+    throw profilesResult.error;
+  }
+
+  const students = studentsResult.data || [];
+  const profiles = profilesResult.data || [];
+  const linkedAccountIds = new Set(
+    students.map(student=>student.auth_user_id).filter(Boolean)
+  );
+  const unlinkedStudents = students.filter(student=>!student.auth_user_id);
+  const availableProfiles = profiles.filter(profile=>!linkedAccountIds.has(profile.id));
+
+  document.getElementById("content").innerHTML = `
+    <div class="card">
+      <div class="card-title">Link student accounts</div>
+      <p class="helper-text">Connect each student login to exactly one student record. This restores access to the student dashboard, grades, and attendance.</p>
+
+      <form id="accountLinkForm" style="margin-top:22px" onsubmit="linkStudentAccount(event)">
+        <div class="form-group">
+          <label for="linkStudentRecord">Unlinked student record</label>
+          <select id="linkStudentRecord" required ${unlinkedStudents.length ? "" : "disabled"}>
+            <option value="">Select a student record</option>
+            ${unlinkedStudents.map(student=>`
+              <option value="${student.id}">
+                ${escapeHTML(student.full_name)} — ${escapeHTML(student.student_id_number || "No ID")}
+              </option>
+            `).join("")}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="linkStudentAccount">Student login account</label>
+          <select id="linkStudentAccount" required ${availableProfiles.length ? "" : "disabled"}>
+            <option value="">Select a student account</option>
+            ${availableProfiles.map(profile=>`
+              <option value="${profile.id}">
+                ${escapeHTML(profile.name || "Unnamed student account")} — ${profile.id}
+              </option>
+            `).join("")}
+          </select>
+          <p class="form-hint" style="margin-top:7px">Only student accounts that are not already linked are shown.</p>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="primary-btn" ${unlinkedStudents.length && availableProfiles.length ? "" : "disabled"}>Link Account</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+      <div class="card-title">Current links</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Student</th><th>Student ID</th><th>Account status</th></tr></thead>
+          <tbody>
+            ${students.map(student=>`
+              <tr>
+                <td>${escapeHTML(student.full_name)}</td>
+                <td>${escapeHTML(student.student_id_number || "-")}</td>
+                <td>${student.auth_user_id ? '<span class="badge badge-present">Linked</span>' : '<span class="badge badge-late">Needs linking</span>'}</td>
+              </tr>
+            `).join("") || '<tr><td colspan="3">No student records found.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+}
+
+
+async function linkStudentAccount(event){
+
+  event.preventDefault();
+
+  const studentId = document.getElementById("linkStudentRecord")?.value;
+  const accountId = document.getElementById("linkStudentAccount")?.value;
+
+  if(!studentId || !accountId){
+    showToast("Choose both a student record and a student account.","error");
+    return;
+  }
+
+  const button = event.currentTarget.querySelector('button[type="submit"]');
+
+  try{
+    if(button){
+      button.disabled = true;
+      button.textContent = "Linking…";
+    }
+
+    const {data,error} = await db
+      .from("students")
+      .update({auth_user_id:accountId})
+      .eq("id",studentId)
+      .is("auth_user_id",null)
+      .select("id")
+      .maybeSingle();
+
+    if(error){
+      throw error;
+    }
+
+    if(!data){
+      throw new Error("This student record was already linked or is no longer available. Refresh the page and try again.");
+    }
+
+    await logActivity("LINK_STUDENT_ACCOUNT","Linked a student login account.");
+    showToast("Student account linked. The student can refresh or sign in again.","success");
+    await renderAccountLinks();
+  }catch(error){
+    showToast(error.message || "Unable to link the student account.","error");
+
+    if(button){
+      button.disabled = false;
+      button.textContent = "Link Account";
+    }
+  }
+}
+
+
+/* =========================================================
    STUDENTS
 ========================================================= */
 
@@ -3800,7 +4186,14 @@ function studentTableHTML(students){
                             Delete Login
                           </button>
                         `
-                        : ""
+                        : `
+                          <button
+                            class="success-btn small-btn"
+                            onclick="openAddStudentLoginModal('${student.id}')"
+                          >
+                            Add Gmail Login
+                          </button>
+                        `
                       }
 
                     </td>
@@ -3917,8 +4310,13 @@ function openStudentModal(){
         <label>RFID UID</label>
         <input
           id="studentRFID"
+          autocomplete="off"
+          placeholder="Tap or scan an RFID card"
           required
         >
+        <p id="studentRFIDStatus" class="form-hint" style="margin-top:7px">
+          Click into the field above, then tap the student's RFID card — the UID fills in automatically.
+        </p>
       </div>
 
       <div class="form-group">
@@ -3956,14 +4354,17 @@ function openStudentModal(){
           style="margin-top:15px"
         >
 
-          <label>
-            Student Email
+          <label for="studentEmail">
+            Gmail for student login
           </label>
 
           <input
             id="studentEmail"
             type="email"
-            placeholder="student@example.com"
+            placeholder="student@gmail.com"
+            pattern="[A-Za-z0-9._%+\-]+@gmail\.com"
+            title="Enter a valid Gmail address."
+            required
           >
 
         </div>
@@ -3971,15 +4372,19 @@ function openStudentModal(){
 
         <div class="form-group">
 
-          <label>
-            Temporary Password
+          <label for="studentPassword">
+            Temporary password
           </label>
 
           <input
             id="studentPassword"
             type="password"
-            placeholder="Password"
+            placeholder="At least 6 characters"
+            minlength="6"
+            required
           >
+
+          <p class="form-hint" style="margin-top:7px">The student signs in with this Gmail and password, then can change the password later.</p>
 
         </div>
 
@@ -4015,6 +4420,11 @@ function openStudentModal(){
       "submit",
       createStudent
     );
+
+  setupRFIDAutoScan(
+    "studentRFID",
+    "studentRFIDStatus"
+  );
 }
 
 
@@ -4070,6 +4480,10 @@ async function createStudent(e){
           "studentPassword"
         )
         .value;
+
+    if(!/^[A-Z0-9._%+-]+@gmail\.com$/i.test(email)){
+      throw new Error("Enter a valid Gmail address for the student login.");
+    }
 
     let photoPath =
       null;
@@ -4205,6 +4619,233 @@ async function createStudent(e){
       error.message,
       "error"
     );
+  }
+}
+
+
+/* =========================================================
+   ADD GMAIL LOGIN TO EXISTING STUDENT
+========================================================= */
+
+function openAddStudentLoginModal(id){
+
+  const student =
+    state.students.find(
+      x =>
+        x.id === id
+    );
+
+  if(!student){
+    return;
+  }
+
+  if(student.auth_user_id){
+    showToast("This student already has a login.","warning");
+    return;
+  }
+
+  openModal(`
+
+    <div class="modal-header">
+
+      <div>
+        <div class="modal-title">
+          Add Gmail Login
+        </div>
+        <div class="modal-subtitle">
+          ${escapeHTML(student.full_name)} · ${escapeHTML(student.student_id_number || "")}
+        </div>
+      </div>
+
+      <button
+        class="close-btn"
+        type="button"
+        onclick="closeModal()"
+        aria-label="Close dialog"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="addStudentLoginForm">
+
+      <p class="helper-text" style="margin-bottom:16px">
+        This creates a new sign-in account for this student and links it to their existing record. Attendance and RFID history are kept as is.
+      </p>
+
+      <div class="form-group">
+
+        <label for="addLoginEmail">
+          Gmail for student login
+        </label>
+
+        <input
+          id="addLoginEmail"
+          type="email"
+          placeholder="student@gmail.com"
+          pattern="[A-Za-z0-9._%+\-]+@gmail\.com"
+          title="Enter a valid Gmail address."
+          required
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="addLoginPassword">
+          Temporary password
+        </label>
+
+        <input
+          id="addLoginPassword"
+          type="password"
+          placeholder="At least 6 characters"
+          minlength="6"
+          required
+        >
+
+        <p class="form-hint" style="margin-top:7px">
+          The student signs in with this Gmail and password, then can change the password later.
+        </p>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="closeModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Create Login
+        </button>
+
+      </div>
+
+    </form>
+  `);
+
+
+  document
+    .getElementById("addStudentLoginForm")
+    .addEventListener(
+      "submit",
+      event => addStudentLogin(event,id)
+    );
+}
+
+
+async function addStudentLogin(event,studentId){
+
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  try{
+
+    const student =
+      state.students.find(
+        x => x.id === studentId
+      );
+
+    if(!student){
+      throw new Error("Student record not found.");
+    }
+
+    if(student.auth_user_id){
+      throw new Error("This student already has a login.");
+    }
+
+    const email =
+      document
+        .getElementById("addLoginEmail")
+        .value
+        .trim();
+
+    const password =
+      document
+        .getElementById("addLoginPassword")
+        .value;
+
+    if(!/^[A-Z0-9._%+-]+@gmail\.com$/i.test(email)){
+      throw new Error("Enter a valid Gmail address for the student login.");
+    }
+
+    if(submitButton){
+      submitButton.disabled = true;
+      submitButton.textContent = "Creating…";
+    }
+
+    const result =
+      await callFunction(
+        "add_student",
+        {
+          email,
+          password,
+          name:student.full_name
+        }
+      );
+
+    const authUserId =
+      result.user?.id ||
+      result.id ||
+      result.user_id ||
+      null;
+
+    if(!authUserId){
+      throw new Error("Student account was created but no user ID was returned.");
+    }
+
+    const {error} =
+      await db
+        .from("students")
+        .update({auth_user_id:authUserId})
+        .eq("id",studentId)
+        .is("auth_user_id",null);
+
+    if(error){
+      throw error;
+    }
+
+    await logActivity(
+      "ADD_STUDENT_LOGIN",
+      "Added a Gmail login for " + student.full_name
+    );
+
+    closeModal();
+
+    showToast(
+      "Gmail login created and linked to " + student.full_name + ".",
+      "success"
+    );
+
+    await renderStudents();
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message || "Unable to create the student login.",
+      "error"
+    );
+
+    if(submitButton){
+      submitButton.disabled = false;
+      submitButton.textContent = "Create Login";
+    }
   }
 }
 
@@ -4473,8 +5114,37 @@ function editStudent(id){
           value="${escapeHTML(
             student.rfid_uid
           )}"
+          autocomplete="off"
           required
         >
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            margin-top:7px
+          "
+        >
+
+          <p
+            id="editStudentRFIDStatus"
+            class="form-hint"
+            style="margin:0"
+          >
+            Current UID shown above. To assign a new card, clear it and scan.
+          </p>
+
+          <button
+            type="button"
+            class="secondary-btn small-btn"
+            style="flex-shrink:0"
+            onclick="clearAndRescanField('editStudentRFID','editStudentRFIDStatus')"
+          >
+            Clear &amp; Rescan
+          </button>
+
+        </div>
 
       </div>
 
@@ -4515,6 +5185,12 @@ function editStudent(id){
 
     </form>
   `);
+
+
+  setupRFIDAutoScan(
+    "editStudentRFID",
+    "editStudentRFIDStatus"
+  );
 
 
   document
@@ -6437,8 +7113,13 @@ function openRoomModal(){
         <input
           id="readerId"
           placeholder="READER-001"
+          autocomplete="off"
           required
         >
+
+        <p id="readerIdStatus" class="form-hint" style="margin-top:7px">
+          Click into the field above, then scan the reader's tag — the ID fills in automatically. You can still type it manually.
+        </p>
 
       </div>
 
@@ -6475,6 +7156,12 @@ function openRoomModal(){
 
     </form>
   `);
+
+
+  setupRFIDAutoScan(
+    "readerId",
+    "readerIdStatus"
+  );
 
 
   document
@@ -6638,8 +7325,37 @@ function editRoom(id){
           value="${escapeHTML(
             room.reader_id
           )}"
+          autocomplete="off"
           required
         >
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            margin-top:7px
+          "
+        >
+
+          <p
+            id="editReaderIdStatus"
+            class="form-hint"
+            style="margin:0"
+          >
+            Current reader ID shown above. To replace it, clear and scan.
+          </p>
+
+          <button
+            type="button"
+            class="secondary-btn small-btn"
+            style="flex-shrink:0"
+            onclick="clearAndRescanField('editReaderId','editReaderIdStatus')"
+          >
+            Clear &amp; Rescan
+          </button>
+
+        </div>
 
       </div>
 
@@ -6680,6 +7396,12 @@ function editRoom(id){
 
     </form>
   `);
+
+
+  setupRFIDAutoScan(
+    "editReaderId",
+    "editReaderIdStatus"
+  );
 
 
   document
@@ -7768,8 +8490,24 @@ async function renderTeacherAttendance(){
             color:var(--muted)
           "
         >
-          ESP32 RFID readers should send attendance
-          records using the assigned reader_id.
+          Keep this page open, then tap a registered RFID card. Keyboard-wedge and USB readers submit automatically.
+        </p>
+
+        <form id="rfidScanForm" style="margin-top:18px" onsubmit="recordRFIDScan(event)">
+          <label class="sr-only" for="rfidScanInput">RFID card ID</label>
+          <input
+            id="rfidScanInput"
+            autocomplete="off"
+            inputmode="text"
+            placeholder="Tap card or enter RFID UID"
+            oninput="scheduleRFIDScan()"
+            ${state.currentSession ? "" : "disabled"}
+          >
+          <button class="primary-btn" type="submit" ${state.currentSession ? "" : "disabled"}>Record Scan</button>
+        </form>
+
+        <p id="rfidScanHint" class="form-hint" style="margin-top:10px">
+          ${state.currentSession ? "Ready to receive scans." : "Start a class session before scanning."}
         </p>
 
       </div>
@@ -7948,6 +8686,28 @@ async function startSession(){
         "Session Active - Waiting for RFID Scans";
     }
 
+    const scanInput =
+      document.getElementById("rfidScanInput");
+
+    if(scanInput){
+      scanInput.disabled = false;
+      scanInput.focus();
+    }
+
+    const scanButton =
+      document.querySelector("#rfidScanForm button");
+
+    if(scanButton){
+      scanButton.disabled = false;
+    }
+
+    const scanHint =
+      document.getElementById("rfidScanHint");
+
+    if(scanHint){
+      scanHint.textContent = "Ready to receive scans.";
+    }
+
 
     showToast(
       "Class session started.",
@@ -7960,6 +8720,121 @@ async function startSession(){
       error.message,
       "error"
     );
+  }
+}
+
+
+function scheduleRFIDScan(){
+
+  clearTimeout(state.rfidScanTimer);
+
+  const input =
+    document.getElementById("rfidScanInput");
+
+  if(!input || input.value.trim().length < 4){
+    return;
+  }
+
+  state.rfidScanTimer =
+    setTimeout(
+      ()=>recordRFIDScan(),
+      450
+    );
+}
+
+
+async function recordRFIDScan(event){
+
+  event?.preventDefault();
+
+  const input =
+    document.getElementById("rfidScanInput");
+
+  const uid =
+    input?.value.trim();
+
+  if(!state.currentSession){
+    showToast("Start a class session before scanning.","error");
+    return;
+  }
+
+  if(!uid){
+    return;
+  }
+
+  const now = Date.now();
+
+  if(
+    state.lastRFIDScan?.uid === uid &&
+    now - state.lastRFIDScan.at < 3000
+  ){
+    return;
+  }
+
+  try{
+    const {data:student,error:studentError} = await db
+      .from("students")
+      .select("id,full_name,course_section")
+      .eq("rfid_uid",uid)
+      .maybeSingle();
+
+    if(studentError){
+      throw studentError;
+    }
+
+    if(!student){
+      throw new Error("RFID card is not registered to a student.");
+    }
+
+    if(
+      state.currentSession.course_section &&
+      student.course_section !== state.currentSession.course_section
+    ){
+      throw new Error("This card does not belong to the active class section.");
+    }
+
+    const timestamp =
+      new Date().toISOString();
+
+    const {error:recordError} = await db
+      .from("attendance_records")
+      .insert({
+        student_id:student.id,
+        subject_id:state.currentSession.subject_id,
+        teacher_id:state.currentSession.teacher_id,
+        reader_id:state.currentSession.reader_id,
+        scanned_rfid:uid,
+        status:"Present",
+        timestamp
+      });
+
+    if(recordError){
+      throw recordError;
+    }
+
+    state.lastRFIDScan = {uid,at:now};
+
+    if(input){
+      input.value = "";
+      input.focus();
+    }
+
+    const hint =
+      document.getElementById("rfidScanHint");
+
+    if(hint){
+      hint.textContent = `${student.full_name} recorded at ${formatTime(timestamp)}.`;
+    }
+
+    showToast(`${student.full_name} marked present.`,"success");
+    await loadAttendance();
+  }catch(error){
+    if(input){
+      input.value = "";
+      input.focus();
+    }
+
+    showToast(error.message || "Unable to record the RFID scan.","error");
   }
 }
 
@@ -8290,6 +9165,48 @@ function gradeChipHTML(value){
 }
 
 
+function periodGradeCellHTML(value){
+
+  if(
+    value === null ||
+    value === undefined ||
+    value === ""
+  ){
+
+    return `<span class="grade-empty">-</span>`;
+  }
+
+  return escapeHTML(
+    formatGrade(value)
+  );
+}
+
+
+function computeOverallGrade(periods){
+
+  const values =
+    periods
+      .map(v=>Number(v))
+      .filter(v=>Number.isFinite(v));
+
+  if(!values.length){
+    return null;
+  }
+
+  const total =
+    values.reduce(
+      (sum,v)=>sum + v,
+      0
+    );
+
+  return (
+    Math.round(
+      (total / values.length) * 100
+    ) / 100
+  );
+}
+
+
 function gradeRecordsTableHTML(records,showStudent=false){
 
   return `
@@ -8310,7 +9227,11 @@ function gradeRecordsTableHTML(records,showStudent=false){
             }
             <th>Subject</th>
             <th>Section</th>
-            <th>Final Grade</th>
+            <th>Prelim</th>
+            <th>Midterm</th>
+            <th>Pre-Finals</th>
+            <th>Finals</th>
+            <th>Overall</th>
             <th>Remarks</th>
             <th>Last Updated</th>
           </tr>
@@ -8362,6 +9283,18 @@ function gradeRecordsTableHTML(records,showStudent=false){
                   )}
                 </td>
                 <td>
+                  ${periodGradeCellHTML(record.prelim_grade)}
+                </td>
+                <td>
+                  ${periodGradeCellHTML(record.midterm_grade)}
+                </td>
+                <td>
+                  ${periodGradeCellHTML(record.prefinal_grade)}
+                </td>
+                <td>
+                  ${periodGradeCellHTML(record.final_grade)}
+                </td>
+                <td>
                   ${gradeChipHTML(record.grade)}
                 </td>
                 <td>
@@ -8374,7 +9307,7 @@ function gradeRecordsTableHTML(records,showStudent=false){
             `).join("")
             : `
               <tr>
-                <td colspan="${showStudent ? 7 : 5}">
+                <td colspan="${showStudent ? 11 : 9}">
                   No grades have been recorded yet.
                 </td>
               </tr>
@@ -8462,7 +9395,7 @@ async function renderStudentGrades(){
     ).innerHTML = `
       <div class="card empty-state">
         <h3>Student profile not found</h3>
-        <p>Your account is not linked to a student record.</p>
+        <p>Your account is not linked to a student record. Ask an administrator to use Account Links.</p>
       </div>
     `;
     return;
@@ -8652,7 +9585,11 @@ async function renderTeacherGrades(){
             <tr>
               <th>Student</th>
               <th>Student ID</th>
-              <th>Final Grade</th>
+              <th>Prelim</th>
+              <th>Midterm</th>
+              <th>Pre-Finals</th>
+              <th>Finals</th>
+              <th>Overall</th>
               <th>Remarks</th>
               <th>Last Updated</th>
               <th>Action</th>
@@ -8669,6 +9606,10 @@ async function renderTeacherGrades(){
                     <tr>
                       <td><strong>${escapeHTML(student.full_name)}</strong></td>
                       <td>${escapeHTML(student.student_id_number)}</td>
+                      <td>${periodGradeCellHTML(record?.prelim_grade)}</td>
+                      <td>${periodGradeCellHTML(record?.midterm_grade)}</td>
+                      <td>${periodGradeCellHTML(record?.prefinal_grade)}</td>
+                      <td>${periodGradeCellHTML(record?.final_grade)}</td>
                       <td>
                         ${
                           record
@@ -8683,7 +9624,7 @@ async function renderTeacherGrades(){
                           class="secondary-btn small-btn"
                           onclick="openGradeModal('${student.id}','${selectedAssignment.subject_id}')"
                         >
-                          ${record ? "Edit Grade" : "Record Grade"}
+                          ${record ? "Edit Grades" : "Record Grades"}
                         </button>
                       </td>
                     </tr>
@@ -8691,7 +9632,7 @@ async function renderTeacherGrades(){
                 }).join("")
               : `
                 <tr>
-                  <td colspan="6">
+                  <td colspan="10">
                     No students are enrolled in this section.
                   </td>
                 </tr>
@@ -8746,7 +9687,7 @@ function openGradeModal(studentId,subjectId){
     <div class="modal-header">
       <div>
         <div class="modal-title">
-          ${existingGrade ? "Edit Grade" : "Record Grade"}
+          ${existingGrade ? "Edit Grades" : "Record Grades"}
         </div>
         <div class="modal-subtitle">
           ${escapeHTML(student.full_name)} · ${escapeHTML(subject.subject_code)}
@@ -8763,22 +9704,85 @@ function openGradeModal(studentId,subjectId){
     </div>
 
     <form id="gradeForm">
-      <div class="form-group">
-        <label for="gradeValue">Final Grade</label>
-        <input
-          id="gradeValue"
-          type="number"
-          min="0"
-          max="100"
-          step="0.01"
-          value="${
-            existingGrade
-            ? escapeHTML(existingGrade.grade)
-            : ""
-          }"
-          placeholder="0–100"
-          required
-        >
+
+      <p class="helper-text" style="margin-bottom:16px">
+        Enter whichever grading periods are available. The overall grade is the average of the periods you fill in.
+      </p>
+
+      <div class="grid-2">
+
+        <div class="form-group">
+          <label for="gradePrelim">Prelim</label>
+          <input
+            id="gradePrelim"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value="${
+              existingGrade?.prelim_grade !== null &&
+              existingGrade?.prelim_grade !== undefined
+              ? escapeHTML(existingGrade.prelim_grade)
+              : ""
+            }"
+            placeholder="0–100"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="gradeMidterm">Midterm</label>
+          <input
+            id="gradeMidterm"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value="${
+              existingGrade?.midterm_grade !== null &&
+              existingGrade?.midterm_grade !== undefined
+              ? escapeHTML(existingGrade.midterm_grade)
+              : ""
+            }"
+            placeholder="0–100"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="gradePrefinal">Pre-Finals</label>
+          <input
+            id="gradePrefinal"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value="${
+              existingGrade?.prefinal_grade !== null &&
+              existingGrade?.prefinal_grade !== undefined
+              ? escapeHTML(existingGrade.prefinal_grade)
+              : ""
+            }"
+            placeholder="0–100"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="gradeFinal">Finals</label>
+          <input
+            id="gradeFinal"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value="${
+              existingGrade?.final_grade !== null &&
+              existingGrade?.final_grade !== undefined
+              ? escapeHTML(existingGrade.final_grade)
+              : ""
+            }"
+            placeholder="0–100"
+          >
+        </div>
+
       </div>
 
       <div class="form-group">
@@ -8800,7 +9804,7 @@ function openGradeModal(studentId,subjectId){
           Cancel
         </button>
         <button class="primary-btn">
-          ${existingGrade ? "Save Changes" : "Save Grade"}
+          ${existingGrade ? "Save Changes" : "Save Grades"}
         </button>
       </div>
     </form>
@@ -8816,20 +9820,58 @@ function openGradeModal(studentId,subjectId){
 
         try{
 
-          const grade =
-            Number(
-              document
-                .getElementById("gradeValue")
-                .value
-            );
+          const readPeriodInput =
+            id=>{
 
-          if(
-            !Number.isFinite(grade) ||
-            grade < 0 ||
-            grade > 100
-          ){
+              const raw =
+                document
+                  .getElementById(id)
+                  .value
+                  .trim();
+
+              if(raw === ""){
+                return null;
+              }
+
+              const parsed =
+                Number(raw);
+
+              if(
+                !Number.isFinite(parsed) ||
+                parsed < 0 ||
+                parsed > 100
+              ){
+                throw new Error(
+                  "Each grade must be a number from 0 to 100."
+                );
+              }
+
+              return parsed;
+            };
+
+          const prelimGrade =
+            readPeriodInput("gradePrelim");
+
+          const midtermGrade =
+            readPeriodInput("gradeMidterm");
+
+          const prefinalGrade =
+            readPeriodInput("gradePrefinal");
+
+          const finalGrade =
+            readPeriodInput("gradeFinal");
+
+          const overallGrade =
+            computeOverallGrade([
+              prelimGrade,
+              midtermGrade,
+              prefinalGrade,
+              finalGrade
+            ]);
+
+          if(overallGrade === null){
             throw new Error(
-              "Enter a grade from 0 to 100."
+              "Enter at least one grading period."
             );
           }
 
@@ -8850,7 +9892,11 @@ function openGradeModal(studentId,subjectId){
             student_id:studentId,
             subject_id:subjectId,
             graded_by:teacher.id,
-            grade,
+            prelim_grade:prelimGrade,
+            midterm_grade:midtermGrade,
+            prefinal_grade:prefinalGrade,
+            final_grade:finalGrade,
+            grade:overallGrade,
             remarks:
               document
                 .getElementById("gradeRemarks")
@@ -8880,15 +9926,15 @@ function openGradeModal(studentId,subjectId){
 
           showToast(
             existingGrade
-              ? "Grade updated."
-              : "Grade saved.",
+              ? "Grades updated."
+              : "Grades saved.",
             "success"
           );
 
         }catch(error){
           showToast(
             error.message ||
-            "Unable to save this grade.",
+            "Unable to save these grades.",
             "error"
           );
         }
