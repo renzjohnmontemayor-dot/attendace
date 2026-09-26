@@ -1708,6 +1708,16 @@ tr:hover td{
 
     <nav id="navigation" class="nav" aria-label="Main navigation"></nav>
 
+    <button
+      id="changePasswordBtn"
+      class="logout"
+      type="button"
+      style="margin-bottom:8px"
+      onclick="openChangePasswordModal()"
+    >
+      Change Password
+    </button>
+
     <button id="logoutBtn" class="logout" type="button">
       Logout
     </button>
@@ -1806,6 +1816,7 @@ const state = {
   grades:[],
   assignments:[],
   logs:[],
+  announcements:[],
   currentPage:"dashboard",
   selectedStudent:null,
   selectedGradeSubjectId:null,
@@ -2503,6 +2514,178 @@ async function loadUser(){
 }
 
 
+/* =========================================================
+   CHANGE PASSWORD
+========================================================= */
+
+function openChangePasswordModal(){
+
+  openModal(`
+
+    <div class="modal-header">
+
+      <div class="modal-title">
+        Change Password
+      </div>
+
+      <button
+        class="close-btn"
+        type="button"
+        onclick="closeModal()"
+        aria-label="Close dialog"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="changePasswordForm">
+
+      <p class="helper-text" style="margin-bottom:16px">
+        Choose a new password for your account. You'll stay signed in after changing it.
+      </p>
+
+      <div class="form-group">
+
+        <label for="newPassword">
+          New Password
+        </label>
+
+        <input
+          id="newPassword"
+          type="password"
+          placeholder="At least 6 characters"
+          minlength="6"
+          autocomplete="new-password"
+          required
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="confirmNewPassword">
+          Confirm New Password
+        </label>
+
+        <input
+          id="confirmNewPassword"
+          type="password"
+          placeholder="Re-enter the new password"
+          minlength="6"
+          autocomplete="new-password"
+          required
+        >
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="closeModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Update Password
+        </button>
+
+      </div>
+
+    </form>
+  `);
+
+
+  document
+    .getElementById("changePasswordForm")
+    .addEventListener(
+      "submit",
+      changePassword
+    );
+}
+
+
+async function changePassword(event){
+
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  try{
+
+    const newPassword =
+      document
+        .getElementById("newPassword")
+        .value;
+
+    const confirmNewPassword =
+      document
+        .getElementById("confirmNewPassword")
+        .value;
+
+    if(newPassword.length < 6){
+      throw new Error(
+        "Password must be at least 6 characters."
+      );
+    }
+
+    if(newPassword !== confirmNewPassword){
+      throw new Error(
+        "Passwords do not match."
+      );
+    }
+
+    if(submitButton){
+      submitButton.disabled = true;
+      submitButton.textContent = "Updating…";
+    }
+
+    const {
+      error
+    } =
+      await db.auth.updateUser({
+        password:newPassword
+      });
+
+    if(error){
+      throw error;
+    }
+
+    closeModal();
+
+    showToast(
+      "Password updated.",
+      "success"
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message ||
+      "Unable to update password.",
+      "error"
+    );
+
+    if(submitButton){
+      submitButton.disabled = false;
+      submitButton.textContent = "Update Password";
+    }
+  }
+}
+
+
 async function checkSession(){
 
   const {
@@ -2615,6 +2798,10 @@ function buildNavigation(){
         Dashboard
       </button>
 
+      <button onclick="loadPage('announcements')">
+        Announcements
+      </button>
+
       <div class="nav-section">
         Management
       </div>
@@ -2685,6 +2872,10 @@ function buildNavigation(){
         Dashboard
       </button>
 
+      <button onclick="loadPage('announcements')">
+        Announcements
+      </button>
+
       <button onclick="loadPage('mySubjects')">
         My Subjects
       </button>
@@ -2721,6 +2912,10 @@ function buildNavigation(){
 
       <button onclick="loadPage('dashboard')">
         Dashboard
+      </button>
+
+      <button onclick="loadPage('announcements')">
+        Announcements
       </button>
 
       <button onclick="loadPage('profile')">
@@ -2830,6 +3025,7 @@ async function loadPage(page){
   const titleMap = {
 
     dashboard:"Dashboard",
+    announcements:"Announcements",
     students:"Student Records",
     accountLinks:"Account Links",
     teachers:"Teacher Accounts",
@@ -2866,6 +3062,10 @@ async function loadPage(page){
 
       case "dashboard":
         await renderDashboard();
+        break;
+
+      case "announcements":
+        await renderAnnouncements();
         break;
 
       case "students":
@@ -3056,6 +3256,434 @@ async function loadRooms(){
     data || [];
 
   return state.rooms;
+}
+
+
+/* =========================================================
+   ANNOUNCEMENTS LOADER
+========================================================= */
+
+async function loadAnnouncements(){
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("announcements")
+      .select("*")
+      .order(
+        "created_at",
+        {ascending:false}
+      );
+
+  if(error){
+    throw error;
+  }
+
+  state.announcements =
+    data || [];
+
+  return state.announcements;
+}
+
+
+function audienceBadgeHTML(audience){
+
+  const label =
+    audience === "teachers"
+      ? "Teachers"
+      : audience === "students"
+        ? "Students"
+        : "Everyone";
+
+  const className =
+    audience === "teachers"
+      ? "badge-timeout"
+      : audience === "students"
+        ? "badge-late"
+        : "badge-active";
+
+  return `
+    <span class="badge ${className}">
+      ${escapeHTML(label)}
+    </span>
+  `;
+}
+
+
+function announcementCardHTML(announcement){
+
+  return `
+    <div
+      class="card"
+      style="margin-bottom:14px"
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:flex-start;
+          justify-content:space-between;
+          gap:12px
+        "
+      >
+
+        <div>
+
+          <div
+            style="
+              font-weight:800;
+              font-size:15px;
+              color:var(--maroon-dark)
+            "
+          >
+            ${escapeHTML(announcement.title)}
+          </div>
+
+          <div
+            class="table-subtext"
+            style="margin-top:4px"
+          >
+            ${formatDate(announcement.created_at)}
+            ·
+            ${formatTime(announcement.created_at)}
+          </div>
+
+        </div>
+
+        ${audienceBadgeHTML(announcement.audience)}
+
+      </div>
+
+      <p
+        style="
+          margin-top:12px;
+          white-space:pre-wrap;
+          color:#3a3a44
+        "
+      >
+        ${escapeHTML(announcement.message)}
+      </p>
+
+      ${
+        state.profile?.role === "admin"
+        ? `
+          <div
+            style="
+              display:flex;
+              justify-content:flex-end;
+              margin-top:14px
+            "
+          >
+            <button
+              class="danger-btn small-btn"
+              onclick="deleteAnnouncement('${announcement.id}')"
+            >
+              Delete
+            </button>
+          </div>
+        `
+        : ""
+      }
+
+    </div>
+  `;
+}
+
+
+async function renderAnnouncements(){
+
+  await loadAnnouncements();
+
+  const isAdmin =
+    state.profile?.role === "admin";
+
+  document.getElementById(
+    "content"
+  ).innerHTML = `
+
+    ${
+      isAdmin
+      ? `
+        <div class="card" style="margin-bottom:20px">
+
+          <div class="toolbar" style="justify-content:flex-end">
+
+            <button
+              class="primary-btn"
+              onclick="openAnnouncementModal()"
+            >
+              + New Announcement
+            </button>
+
+          </div>
+
+        </div>
+      `
+      : ""
+    }
+
+    ${
+      state.announcements.length
+      ? state.announcements
+          .map(announcementCardHTML)
+          .join("")
+      : `
+        <div class="card empty-state">
+          <h3>No announcements yet</h3>
+          <p>
+            ${
+              isAdmin
+              ? "Post one to let students and teachers know what's going on."
+              : "Check back later for updates from the school."
+            }
+          </p>
+        </div>
+      `
+    }
+  `;
+}
+
+
+function openAnnouncementModal(){
+
+  openModal(`
+
+    <div class="modal-header">
+
+      <div class="modal-title">
+        New Announcement
+      </div>
+
+      <button
+        class="close-btn"
+        type="button"
+        onclick="closeModal()"
+        aria-label="Close dialog"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="announcementForm">
+
+      <div class="form-group">
+
+        <label for="announcementTitle">
+          Title
+        </label>
+
+        <input
+          id="announcementTitle"
+          placeholder="e.g. Holiday Schedule"
+          maxlength="150"
+          required
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="announcementMessage">
+          Message
+        </label>
+
+        <textarea
+          id="announcementMessage"
+          rows="5"
+          maxlength="2000"
+          placeholder="Write the announcement here…"
+          required
+        ></textarea>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="announcementAudience">
+          Audience
+        </label>
+
+        <select id="announcementAudience">
+
+          <option value="all">
+            Everyone
+          </option>
+
+          <option value="students">
+            Students only
+          </option>
+
+          <option value="teachers">
+            Teachers only
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          onclick="closeModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Post Announcement
+        </button>
+
+      </div>
+
+    </form>
+  `);
+
+
+  document
+    .getElementById("announcementForm")
+    .addEventListener(
+      "submit",
+      createAnnouncement
+    );
+}
+
+
+async function createAnnouncement(event){
+
+  event.preventDefault();
+
+  const form = event.currentTarget;
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  try{
+
+    const title =
+      document
+        .getElementById("announcementTitle")
+        .value
+        .trim();
+
+    const message =
+      document
+        .getElementById("announcementMessage")
+        .value
+        .trim();
+
+    const audience =
+      document
+        .getElementById("announcementAudience")
+        .value;
+
+    if(!title || !message){
+      throw new Error(
+        "Enter both a title and a message."
+      );
+    }
+
+    if(submitButton){
+      submitButton.disabled = true;
+      submitButton.textContent = "Posting…";
+    }
+
+    const {
+      error
+    } =
+      await db
+        .from("announcements")
+        .insert({
+          title,
+          message,
+          audience,
+          created_by:state.user.id
+        });
+
+    if(error){
+      throw error;
+    }
+
+    await logActivity(
+      "POST_ANNOUNCEMENT",
+      "Posted announcement: " + title
+    );
+
+    closeModal();
+
+    showToast(
+      "Announcement posted.",
+      "success"
+    );
+
+    await renderAnnouncements();
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message ||
+      "Unable to post this announcement.",
+      "error"
+    );
+
+    if(submitButton){
+      submitButton.disabled = false;
+      submitButton.textContent = "Post Announcement";
+    }
+  }
+}
+
+
+async function deleteAnnouncement(id){
+
+  if(
+    !confirm(
+      "Delete this announcement? Students and teachers will no longer see it."
+    )
+  ){
+    return;
+  }
+
+  try{
+
+    const {
+      error
+    } =
+      await db
+        .from("announcements")
+        .delete()
+        .eq("id",id);
+
+    if(error){
+      throw error;
+    }
+
+    showToast(
+      "Announcement deleted.",
+      "success"
+    );
+
+    await renderAnnouncements();
+
+  }catch(error){
+
+    showToast(
+      error.message ||
+      "Unable to delete this announcement.",
+      "error"
+    );
+  }
 }
 
 
@@ -3282,6 +3910,77 @@ async function renderDashboard(){
 }
 
 
+function recentAnnouncementsCardHTML(){
+
+  const recent =
+    state.announcements.slice(0,3);
+
+  return `
+    <div
+      class="card"
+      style="margin-bottom:20px"
+    >
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          margin-bottom:16px
+        "
+      >
+
+        <div class="card-title" style="margin-bottom:0">
+          Announcements
+        </div>
+
+        <button
+          class="secondary-btn small-btn"
+          onclick="loadPage('announcements')"
+        >
+          View All
+        </button>
+
+      </div>
+
+      ${
+        recent.length
+        ? `
+          <ul class="recent-list">
+            ${
+              recent.map(
+                a => `
+                  <li>
+                    <strong>${escapeHTML(a.title)}</strong>
+                    <div
+                      style="
+                        margin-top:5px;
+                        color:var(--muted);
+                        font-size:13px
+                      "
+                    >
+                      ${formatDate(a.created_at)}
+                      ·
+                      ${audienceBadgeHTML(a.audience)}
+                    </div>
+                  </li>
+                `
+              ).join("")
+            }
+          </ul>
+        `
+        : `
+          <p style="color:var(--muted)">
+            No announcements yet.
+          </p>
+        `
+      }
+
+    </div>
+  `;
+}
+
+
 async function renderAdminDashboard(){
 
   await Promise.all([
@@ -3289,7 +3988,8 @@ async function renderAdminDashboard(){
     loadTeachers(),
     loadSubjects(),
     loadRooms(),
-    loadAttendance()
+    loadAttendance(),
+    loadAnnouncements()
   ]);
 
   const todayString =
@@ -3336,6 +4036,8 @@ async function renderAdminDashboard(){
   document.getElementById(
     "content"
   ).innerHTML = `
+
+    ${recentAnnouncementsCardHTML()}
 
     <div class="stats-grid">
 
@@ -3448,7 +4150,8 @@ async function renderTeacherDashboard(){
     loadStudents(),
     loadSubjects(),
     loadRooms(),
-    loadAttendance()
+    loadAttendance(),
+    loadAnnouncements()
   ]);
 
   const myTeacher =
@@ -3489,6 +4192,8 @@ async function renderTeacherDashboard(){
   document.getElementById(
     "content"
   ).innerHTML = `
+
+    ${recentAnnouncementsCardHTML()}
 
     <div class="stats-grid">
 
@@ -3757,6 +4462,7 @@ async function renderStudentDashboard(){
   }
 
   await loadAttendance();
+  await loadAnnouncements();
 
   const records =
     state.attendance.filter(
@@ -3790,6 +4496,8 @@ async function renderStudentDashboard(){
   document.getElementById(
     "content"
   ).innerHTML = `
+
+    ${recentAnnouncementsCardHTML()}
 
     <div class="card">
 
