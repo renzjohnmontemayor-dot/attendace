@@ -2800,6 +2800,11 @@ function buildNavigation(){
 
       <button onclick="loadPage('announcements')">
         Announcements
+        <span
+          id="announcementsBadge"
+          class="badge badge-late"
+          style="display:none;margin-left:6px"
+        ></span>
       </button>
 
       <div class="nav-section">
@@ -2874,6 +2879,11 @@ function buildNavigation(){
 
       <button onclick="loadPage('announcements')">
         Announcements
+        <span
+          id="announcementsBadge"
+          class="badge badge-late"
+          style="display:none;margin-left:6px"
+        ></span>
       </button>
 
       <button onclick="loadPage('mySubjects')">
@@ -2916,6 +2926,11 @@ function buildNavigation(){
 
       <button onclick="loadPage('announcements')">
         Announcements
+        <span
+          id="announcementsBadge"
+          class="badge badge-late"
+          style="display:none;margin-left:6px"
+        ></span>
       </button>
 
       <button onclick="loadPage('profile')">
@@ -2928,6 +2943,11 @@ function buildNavigation(){
 
       <button onclick="loadPage('grades')">
         My Grades
+        <span
+          id="gradesBadge"
+          class="badge badge-late"
+          style="display:none;margin-left:6px"
+        ></span>
       </button>
 
       <button onclick="loadPage('mySubjects')">
@@ -3237,6 +3257,456 @@ async function loadSubjects(){
 }
 
 
+/* =========================================================
+   CLASS ROSTER (explicit enrollment)
+   Replaces course_section text-matching with a real table.
+========================================================= */
+
+async function loadActiveRosterForSubject(subjectId){
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("class_enrollments")
+      .select(`
+        id,
+        status,
+        enrolled_at,
+        students (
+          id,
+          student_id_number,
+          full_name,
+          course_section,
+          rfid_uid,
+          auth_user_id,
+          photo_path
+        )
+      `)
+      .eq("subject_id",subjectId)
+      .eq("status","active")
+      .order("enrolled_at");
+
+  if(error){
+    throw error;
+  }
+
+  return (data || [])
+    .map(row => row.students)
+    .filter(Boolean);
+}
+
+
+async function loadActiveRosterForSubjects(subjectIds){
+
+  if(!subjectIds.length){
+    return [];
+  }
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("class_enrollments")
+      .select(`
+        students (
+          id,
+          student_id_number,
+          full_name,
+          course_section,
+          rfid_uid,
+          auth_user_id,
+          photo_path
+        )
+      `)
+      .in("subject_id",subjectIds)
+      .eq("status","active");
+
+  if(error){
+    throw error;
+  }
+
+  const seen = new Set();
+  const students = [];
+
+  for(const row of (data || [])){
+
+    if(row.students && !seen.has(row.students.id)){
+
+      seen.add(row.students.id);
+      students.push(row.students);
+    }
+  }
+
+  return students;
+}
+
+
+async function loadMyEnrolledSubjects(studentId){
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("class_enrollments")
+      .select(`
+        subjects (
+          id,
+          subject_code,
+          subject_name,
+          course_section,
+          school_year,
+          semester
+        )
+      `)
+      .eq("student_id",studentId)
+      .eq("status","active");
+
+  if(error){
+    throw error;
+  }
+
+  return (data || [])
+    .filter(row => row.subjects)
+    .map(row => ({subjects:row.subjects}));
+}
+
+
+async function isStudentActivelyEnrolled(subjectId,studentId){
+
+  const {
+    data,
+    error
+  } =
+    await db
+      .from("class_enrollments")
+      .select("id")
+      .eq("subject_id",subjectId)
+      .eq("student_id",studentId)
+      .eq("status","active")
+      .maybeSingle();
+
+  if(error){
+    throw error;
+  }
+
+  return Boolean(data);
+}
+
+
+function rosterModalHTML(subject,enrolledStudents,availableStudents){
+
+  return `
+
+    <div class="modal-header">
+
+      <div>
+        <div class="modal-title">
+          Class Roster
+        </div>
+        <div class="modal-subtitle">
+          ${escapeHTML(subject.subject_code)} · ${escapeHTML(subject.subject_name)}
+        </div>
+      </div>
+
+      <button
+        class="close-btn"
+        type="button"
+        onclick="closeModal()"
+        aria-label="Close dialog"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form
+      id="rosterAddForm"
+      style="
+        display:flex;
+        gap:10px;
+        align-items:flex-end;
+        margin-bottom:20px
+      "
+    >
+
+      <div class="form-group" style="flex:1;margin-bottom:0">
+
+        <label for="rosterAddStudent">
+          Add a student
+        </label>
+
+        <select id="rosterAddStudent" ${availableStudents.length ? "" : "disabled"}>
+
+          ${
+            availableStudents.length
+            ? availableStudents.map(
+                student => `
+                  <option value="${student.id}">
+                    ${escapeHTML(student.full_name)} — ${escapeHTML(student.student_id_number || "No ID")}
+                  </option>
+                `
+              ).join("")
+            : `<option value="">No other students available</option>`
+          }
+
+        </select>
+
+      </div>
+
+      <button
+        type="submit"
+        class="primary-btn"
+        style="flex-shrink:0"
+        ${availableStudents.length ? "" : "disabled"}
+      >
+        Add
+      </button>
+
+    </form>
+
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Student ID</th>
+            <th>Name</th>
+            <th>Home Section</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${
+            enrolledStudents.length
+            ? enrolledStudents.map(
+                student => `
+                  <tr>
+                    <td>${escapeHTML(student.student_id_number || "-")}</td>
+                    <td><strong>${escapeHTML(student.full_name)}</strong></td>
+                    <td>${escapeHTML(student.course_section || "-")}</td>
+                    <td>
+                      <button
+                        class="danger-btn small-btn"
+                        onclick="removeFromRoster('${subject.id}','${student.id}')"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                `
+              ).join("")
+            : `
+              <tr>
+                <td colspan="4">
+                  No students enrolled in this subject yet.
+                </td>
+              </tr>
+            `
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <div class="modal-actions">
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="closeModal()"
+      >
+        Close
+      </button>
+
+    </div>
+  `;
+}
+
+
+async function openRosterModal(subjectId){
+
+  const subject =
+    state.subjects.find(
+      s => s.id === subjectId
+    );
+
+  if(!subject){
+    showToast("Subject not found.","error");
+    return;
+  }
+
+  try{
+
+    await loadStudents();
+
+    const enrolledStudents =
+      await loadActiveRosterForSubject(subjectId);
+
+    const enrolledIds =
+      new Set(
+        enrolledStudents.map(s=>s.id)
+      );
+
+    const availableStudents =
+      state.students.filter(
+        s => !enrolledIds.has(s.id)
+      );
+
+    openModal(
+      rosterModalHTML(
+        subject,
+        enrolledStudents,
+        availableStudents
+      )
+    );
+
+    document
+      .getElementById("rosterAddForm")
+      .addEventListener(
+        "submit",
+        async event => {
+
+          event.preventDefault();
+
+          const studentId =
+            document
+              .getElementById("rosterAddStudent")
+              .value;
+
+          if(!studentId){
+            return;
+          }
+
+          await addToRoster(
+            subjectId,
+            studentId
+          );
+        }
+      );
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message ||
+      "Unable to load this subject's roster.",
+      "error"
+    );
+  }
+}
+
+
+async function addToRoster(subjectId,studentId){
+
+  try{
+
+    const {
+      error
+    } =
+      await db
+        .from("class_enrollments")
+        .upsert(
+          {
+            subject_id:subjectId,
+            student_id:studentId,
+            status:"active",
+            enrolled_at:new Date().toISOString()
+          },
+          {onConflict:"subject_id,student_id"}
+        );
+
+    if(error){
+      throw error;
+    }
+
+    await logActivity(
+      "ENROLL_STUDENT",
+      "Enrolled a student in a subject roster."
+    );
+
+    showToast(
+      "Student added to roster.",
+      "success"
+    );
+
+    await openRosterModal(subjectId);
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message ||
+      "Unable to add this student to the roster.",
+      "error"
+    );
+  }
+}
+
+
+async function removeFromRoster(subjectId,studentId){
+
+  if(
+    !confirm(
+      "Remove this student from the subject's roster?"
+    )
+  ){
+    return;
+  }
+
+  try{
+
+    const {
+      error
+    } =
+      await db
+        .from("class_enrollments")
+        .update({status:"dropped"})
+        .eq("subject_id",subjectId)
+        .eq("student_id",studentId);
+
+    if(error){
+      throw error;
+    }
+
+    await logActivity(
+      "DROP_STUDENT",
+      "Removed a student from a subject roster."
+    );
+
+    showToast(
+      "Student removed from roster.",
+      "success"
+    );
+
+    await openRosterModal(subjectId);
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      error.message ||
+      "Unable to remove this student from the roster.",
+      "error"
+    );
+  }
+}
+
+
 async function loadRooms(){
 
   const {
@@ -3284,7 +3754,260 @@ async function loadAnnouncements(){
   state.announcements =
     data || [];
 
+  updateAnnouncementsBadge();
+
   return state.announcements;
+}
+
+
+function isAnnouncementRelevant(announcement){
+
+  if(!announcement){
+    return false;
+  }
+
+  if(state.profile?.role === "admin"){
+    return true;
+  }
+
+  if(announcement.audience === "all"){
+    return true;
+  }
+
+  return (
+    (
+      announcement.audience === "students" &&
+      state.profile?.role === "student"
+    ) ||
+    (
+      announcement.audience === "teachers" &&
+      state.profile?.role === "teacher"
+    )
+  );
+}
+
+
+function announcementsSeenStorageKey(){
+
+  return (
+    "ga_announcements_seen_" +
+    (state.user?.id || "anon")
+  );
+}
+
+
+function getAnnouncementsLastSeen(){
+
+  try{
+
+    return localStorage.getItem(
+      announcementsSeenStorageKey()
+    );
+
+  }catch(error){
+
+    return null;
+  }
+}
+
+
+function setAnnouncementsLastSeen(isoString){
+
+  try{
+
+    localStorage.setItem(
+      announcementsSeenStorageKey(),
+      isoString
+    );
+
+  }catch(error){
+
+    // Storage may be unavailable (private browsing) — badge just
+    // won't persist across reloads, which is a harmless fallback.
+  }
+}
+
+
+function updateAnnouncementsBadge(){
+
+  const badge =
+    document.getElementById(
+      "announcementsBadge"
+    );
+
+  if(!badge){
+    return;
+  }
+
+  const lastSeen =
+    getAnnouncementsLastSeen();
+
+  const unread =
+    state.announcements.filter(
+      announcement => {
+
+        if(!isAnnouncementRelevant(announcement)){
+          return false;
+        }
+
+        if(!lastSeen){
+          return true;
+        }
+
+        return (
+          new Date(announcement.created_at) >
+          new Date(lastSeen)
+        );
+      }
+    );
+
+  if(unread.length){
+
+    badge.textContent =
+      unread.length > 9
+        ? "9+"
+        : String(unread.length);
+
+    badge.style.display =
+      "inline-block";
+
+  }else{
+
+    badge.style.display =
+      "none";
+  }
+}
+
+
+function markAnnouncementsSeen(){
+
+  setAnnouncementsLastSeen(
+    new Date().toISOString()
+  );
+
+  updateAnnouncementsBadge();
+}
+
+
+/* =========================================================
+   BROWSER (OS-LEVEL) NOTIFICATIONS
+   Lets an announcement surface even if the tab isn't focused.
+   Toasts + the nav badge always work regardless of this.
+========================================================= */
+
+function notificationPermissionBannerHTML(){
+
+  if(
+    typeof Notification === "undefined" ||
+    Notification.permission !== "default"
+  ){
+    return "";
+  }
+
+  return `
+    <div
+      class="card"
+      style="
+        margin-bottom:20px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        flex-wrap:wrap
+      "
+    >
+
+      <p style="margin:0;color:var(--muted)">
+        Get a desktop notification for new announcements and grade updates, even if this tab isn't focused.
+      </p>
+
+      <button
+        class="secondary-btn small-btn"
+        style="flex-shrink:0"
+        onclick="enableBrowserNotifications()"
+      >
+        Enable Notifications
+      </button>
+
+    </div>
+  `;
+}
+
+
+async function enableBrowserNotifications(){
+
+  if(typeof Notification === "undefined"){
+
+    showToast(
+      "Your browser doesn't support desktop notifications.",
+      "warning"
+    );
+
+    return;
+  }
+
+  try{
+
+    const permission =
+      await Notification.requestPermission();
+
+    if(permission === "granted"){
+
+      showToast(
+        "Desktop notifications enabled.",
+        "success"
+      );
+
+      if(state.currentPage === "announcements"){
+        await renderAnnouncements();
+      }
+
+    }else{
+
+      showToast(
+        "Notifications weren't enabled. You can still allow this later from your browser's site settings.",
+        "warning"
+      );
+    }
+
+  }catch(error){
+
+    console.warn(
+      "Notification permission request failed:",
+      error
+    );
+  }
+}
+
+
+function showAnnouncementBrowserNotification(announcement){
+
+  if(
+    typeof Notification === "undefined" ||
+    Notification.permission !== "granted"
+  ){
+    return;
+  }
+
+  try{
+
+    new Notification(
+      "📢 " + announcement.title,
+      {
+        body:
+          (announcement.message || "").slice(0,140),
+        tag:
+          "announcement-" + announcement.id
+      }
+    );
+
+  }catch(error){
+
+    console.warn(
+      "Browser notification failed:",
+      error
+    );
+  }
 }
 
 
@@ -3403,6 +4126,8 @@ async function renderAnnouncements(){
     "content"
   ).innerHTML = `
 
+    ${notificationPermissionBannerHTML()}
+
     ${
       isAdmin
       ? `
@@ -3443,6 +4168,8 @@ async function renderAnnouncements(){
       `
     }
   `;
+
+  markAnnouncementsSeen();
 }
 
 
@@ -3738,7 +4465,157 @@ async function loadGrades(){
   state.grades =
     data || [];
 
+  updateGradesBadge();
+
   return state.grades;
+}
+
+
+/* =========================================================
+   GRADE-POSTED NOTIFICATIONS (student-facing)
+   RLS already scopes student_grades to a student's own rows,
+   so anything in state.grades during a student session is
+   inherently "theirs" — no extra filtering needed here.
+========================================================= */
+
+function gradesSeenStorageKey(){
+
+  return (
+    "ga_grades_seen_" +
+    (state.user?.id || "anon")
+  );
+}
+
+
+function getGradesLastSeen(){
+
+  try{
+
+    return localStorage.getItem(
+      gradesSeenStorageKey()
+    );
+
+  }catch(error){
+
+    return null;
+  }
+}
+
+
+function setGradesLastSeen(isoString){
+
+  try{
+
+    localStorage.setItem(
+      gradesSeenStorageKey(),
+      isoString
+    );
+
+  }catch(error){
+
+    // Storage may be unavailable (private browsing) — badge just
+    // won't persist across reloads, which is a harmless fallback.
+  }
+}
+
+
+function updateGradesBadge(){
+
+  if(state.profile?.role !== "student"){
+    return;
+  }
+
+  const badge =
+    document.getElementById(
+      "gradesBadge"
+    );
+
+  if(!badge){
+    return;
+  }
+
+  const lastSeen =
+    getGradesLastSeen();
+
+  const unread =
+    state.grades.filter(
+      record => {
+
+        if(!lastSeen){
+          return true;
+        }
+
+        return (
+          new Date(record.updated_at) >
+          new Date(lastSeen)
+        );
+      }
+    );
+
+  if(unread.length){
+
+    badge.textContent =
+      unread.length > 9
+        ? "9+"
+        : String(unread.length);
+
+    badge.style.display =
+      "inline-block";
+
+  }else{
+
+    badge.style.display =
+      "none";
+  }
+}
+
+
+function markGradesSeen(){
+
+  setGradesLastSeen(
+    new Date().toISOString()
+  );
+
+  updateGradesBadge();
+}
+
+
+function showGradeBrowserNotification(record,isNew){
+
+  if(
+    typeof Notification === "undefined" ||
+    Notification.permission !== "granted"
+  ){
+    return;
+  }
+
+  const subjectLabel =
+    record.subjects?.subject_code ||
+    "a subject";
+
+  try{
+
+    new Notification(
+      isNew
+        ? "🎓 New grade posted"
+        : "🎓 Grade updated",
+      {
+        body:
+          subjectLabel +
+          " — overall: " +
+          formatGrade(record.grade),
+        tag:
+          "grade-" + record.id
+      }
+    );
+
+  }catch(error){
+
+    console.warn(
+      "Browser notification failed:",
+      error
+    );
+  }
 }
 
 
@@ -3917,6 +4794,7 @@ function recentAnnouncementsCardHTML(){
 
   return `
     <div
+      id="recentAnnouncementsCard"
       class="card"
       style="margin-bottom:20px"
     >
@@ -6956,6 +7834,13 @@ function subjectTableHTML(subjects){
 
                       <button
                         class="secondary-btn small-btn"
+                        onclick="openRosterModal('${subject.id}')"
+                      >
+                        Roster
+                      </button>
+
+                      <button
+                        class="secondary-btn small-btn"
                         onclick="editSubject('${subject.id}')"
                       >
                         Edit
@@ -9494,11 +10379,14 @@ async function recordRFIDScan(event){
       throw new Error("RFID card is not registered to a student.");
     }
 
-    if(
-      state.currentSession.course_section &&
-      student.course_section !== state.currentSession.course_section
-    ){
-      throw new Error("This card does not belong to the active class section.");
+    const enrolled =
+      await isStudentActivelyEnrolled(
+        state.currentSession.subject_id,
+        student.id
+      );
+
+    if(!enrolled){
+      throw new Error("This student is not enrolled in the active class.");
     }
 
     const timestamp =
@@ -9576,28 +10464,21 @@ async function renderTeacherStudents(){
     const assignments =
       await loadTeacherAssignments();
 
-    const sections =
-      [
-        ...new Set(
-          assignments
-            .map(
-              a =>
-                a.subjects?.course_section
-            )
-            .filter(Boolean)
-        )
-      ];
+    const subjectIds =
+      assignments
+        .map(a => a.subject_id)
+        .filter(Boolean);
 
-
-    if(sections.length){
+    if(subjectIds.length){
 
       students =
-        state.students.filter(
-          s =>
-            sections.includes(
-              s.course_section
-            )
+        await loadActiveRosterForSubjects(
+          subjectIds
         );
+
+    }else{
+
+      students = [];
     }
   }
 
@@ -9709,17 +10590,9 @@ async function renderMySubjects(){
     if(student){
 
       assignments =
-        state.subjects
-          .filter(
-            s =>
-              s.course_section ===
-              student.course_section
-          )
-          .map(
-            s => ({
-              subjects:s
-            })
-          );
+        await loadMyEnrolledSubjects(
+          student.id
+        );
     }
   }
 
@@ -10139,6 +11012,8 @@ async function renderStudentGrades(){
     "content"
   ).innerHTML = `
 
+    ${notificationPermissionBannerHTML()}
+
     <div class="grade-hero">
       <div>
         <div class="grade-hero-kicker">Academic performance</div>
@@ -10172,6 +11047,8 @@ async function renderStudentGrades(){
       ${gradeRecordsTableHTML(grades)}
     </div>
   `;
+
+  markGradesSeen();
 }
 
 
@@ -10213,10 +11090,8 @@ async function renderTeacherGrades(){
     selectedAssignment.subjects;
 
   const students =
-    state.students.filter(
-      student =>
-        student.course_section ===
-        subject?.course_section
+    await loadActiveRosterForSubject(
+      selectedAssignment.subject_id
     );
 
   const gradeByStudent =
@@ -12269,6 +13144,137 @@ function subscribeRealtime(){
         try{
 
           await loadRooms();
+
+        }catch(error){
+
+          console.error(
+            error
+          );
+        }
+
+      }
+    )
+    .subscribe();
+
+
+  db
+    .channel(
+      "announcements-live"
+    )
+    .on(
+      "postgres_changes",
+      {
+        event:"*",
+        schema:"public",
+        table:"announcements"
+      },
+      async payload=>{
+
+        try{
+
+          await loadAnnouncements();
+
+          if(
+            payload.eventType === "INSERT" &&
+            isAnnouncementRelevant(payload.new)
+          ){
+
+            showToast(
+              "📢 New announcement: " +
+              payload.new.title,
+              "success"
+            );
+
+            showAnnouncementBrowserNotification(
+              payload.new
+            );
+          }
+
+          if(
+            state.currentPage ===
+            "announcements"
+          ){
+
+            await renderAnnouncements();
+
+          }else if(
+            state.currentPage ===
+            "dashboard"
+          ){
+
+            await renderDashboard();
+          }
+
+        }catch(error){
+
+          console.error(
+            error
+          );
+        }
+
+      }
+    )
+    .subscribe();
+
+
+  db
+    .channel(
+      "grades-live"
+    )
+    .on(
+      "postgres_changes",
+      {
+        event:"*",
+        schema:"public",
+        table:"student_grades"
+      },
+      async payload=>{
+
+        try{
+
+          await loadGrades();
+
+          if(
+            state.profile?.role === "student" &&
+            (
+              payload.eventType === "INSERT" ||
+              payload.eventType === "UPDATE"
+            )
+          ){
+
+            const record =
+              state.grades.find(
+                g => g.id === payload.new.id
+              ) || payload.new;
+
+            const subjectLabel =
+              record.subjects?.subject_code ||
+              "a subject";
+
+            const isNew =
+              payload.eventType === "INSERT";
+
+            showToast(
+              (
+                isNew
+                  ? "🎓 New grade posted for "
+                  : "🎓 Grade updated for "
+              ) + subjectLabel,
+              "success"
+            );
+
+            showGradeBrowserNotification(
+              record,
+              isNew
+            );
+          }
+
+          if(
+            state.currentPage === "grades"
+          ){
+
+            await renderGrades();
+          }
 
         }catch(error){
 
