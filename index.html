@@ -8476,7 +8476,91 @@ async function deleteSubject(id){
 
 /* =========================================================
    ROOMS
+   The school has a single building, so a room is identified
+   by its number alone (e.g. 201). The display name, room code
+   and location are generated from that number.
 ========================================================= */
+
+const ROOM_LOCATION = "Main Building";
+
+function cleanRoomNumber(value){
+
+  return String(value || "")
+    .trim()
+    .replace(/^room\s*/i,"")
+    .replace(/\s+/g," ")
+    .toUpperCase();
+}
+
+function roomNumberFromName(name){
+
+  return String(name || "")
+    .replace(/^room\s*/i,"")
+    .trim();
+}
+
+function roomFieldsFromNumber(number){
+
+  return {
+    room_name:"Room " + number,
+    room_code:"RM" + number.replace(/[^A-Z0-9]/g,""),
+    location:ROOM_LOCATION
+  };
+}
+
+function updateRoomPreview(inputId,previewId){
+
+  const input =
+    document.getElementById(inputId);
+
+  const preview =
+    document.getElementById(previewId);
+
+  if(!input || !preview){
+    return;
+  }
+
+  const number =
+    cleanRoomNumber(input.value);
+
+  if(!number){
+
+    preview.textContent =
+      "Type the room number, e.g. 201.";
+
+    return;
+  }
+
+  const fields =
+    roomFieldsFromNumber(number);
+
+  preview.textContent =
+    "Will be saved as " +
+    fields.room_name +
+    " (code " + fields.room_code + ").";
+}
+
+function roomSaveErrorMessage(error){
+
+  if(error?.code === "23505"){
+
+    const detail =
+      String(error.message || "") +
+      String(error.details || "");
+
+    if(detail.includes("reader_id")){
+      return "That reader ID is already assigned to another room.";
+    }
+
+    if(detail.includes("room_code")){
+      return "That room already exists.";
+    }
+  }
+
+  return error?.message ||
+    "Unable to save this room.";
+}
+
 
 async function renderRooms(){
 
@@ -8508,9 +8592,7 @@ async function renderRooms(){
 
             <tr>
               <th>Room</th>
-              <th>Room Code</th>
               <th>Reader ID</th>
-              <th>Location</th>
               <th>Status</th>
               <th>Last Seen</th>
               <th>Actions</th>
@@ -8528,29 +8610,17 @@ async function renderRooms(){
                     <tr>
 
                       <td>
-                        ${escapeHTML(
-                          room.room_name ||
-                          "-"
-                        )}
-                      </td>
-
-                      <td>
-                        ${escapeHTML(
-                          room.room_code ||
-                          "-"
-                        )}
+                        <strong>
+                          ${escapeHTML(
+                            room.room_name ||
+                            "-"
+                          )}
+                        </strong>
                       </td>
 
                       <td>
                         ${escapeHTML(
                           room.reader_id ||
-                          "-"
-                        )}
-                      </td>
-
-                      <td>
-                        ${escapeHTML(
-                          room.location ||
                           "-"
                         )}
                       </td>
@@ -8626,8 +8696,8 @@ async function renderRooms(){
               : `
 
                 <tr>
-                  <td colspan="7">
-                    No rooms found.
+                  <td colspan="5">
+                    No rooms yet. Click "+ Add RFID Room" to add one.
                   </td>
                 </tr>
 
@@ -8657,7 +8727,9 @@ function openRoomModal(){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -8669,37 +8741,31 @@ function openRoomModal(){
 
       <div class="form-group">
 
-        <label>
-          Room Name
+        <label for="roomNumber">
+          Room Number
         </label>
 
         <input
-          id="roomName"
-          placeholder="Room 101"
+          id="roomNumber"
+          placeholder="e.g. 201"
+          maxlength="10"
+          autocomplete="off"
+          pattern="[A-Za-z0-9\\- ]{1,10}"
+          title="Letters and numbers only, e.g. 201"
+          oninput="updateRoomPreview('roomNumber','roomPreview')"
           required
         >
+
+        <p id="roomPreview" class="form-hint" style="margin-top:7px">
+          Type the room number, e.g. 201.
+        </p>
 
       </div>
 
 
       <div class="form-group">
 
-        <label>
-          Room Code
-        </label>
-
-        <input
-          id="roomCode"
-          placeholder="RM101"
-          required
-        >
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>
+        <label for="readerId">
           Reader ID
         </label>
 
@@ -8717,20 +8783,6 @@ function openRoomModal(){
       </div>
 
 
-      <div class="form-group">
-
-        <label>
-          Location
-        </label>
-
-        <input
-          id="roomLocation"
-          placeholder="Main Building"
-        >
-
-      </div>
-
-
       <div class="modal-actions">
 
         <button
@@ -8741,7 +8793,7 @@ function openRoomModal(){
           Cancel
         </button>
 
-        <button class="primary-btn">
+        <button type="submit" class="primary-btn">
           Add Room
         </button>
 
@@ -8758,16 +8810,52 @@ function openRoomModal(){
 
 
   document
-    .getElementById(
-      "roomForm"
-    )
+    .getElementById("roomForm")
     .addEventListener(
       "submit",
       async e=>{
 
         e.preventDefault();
 
+        const submitButton =
+          e.currentTarget.querySelector(
+            'button[type="submit"]'
+          );
+
         try{
+
+          const number =
+            cleanRoomNumber(
+              document
+                .getElementById("roomNumber")
+                .value
+            );
+
+          const readerId =
+            document
+              .getElementById("readerId")
+              .value
+              .trim();
+
+          if(!number){
+            throw new Error(
+              "Enter the room number."
+            );
+          }
+
+          if(!readerId){
+            throw new Error(
+              "Enter or scan the reader ID."
+            );
+          }
+
+          if(submitButton){
+            submitButton.disabled = true;
+            submitButton.textContent = "Adding…";
+          }
+
+          const fields =
+            roomFieldsFromNumber(number);
 
           const {
             error
@@ -8775,54 +8863,24 @@ function openRoomModal(){
             await db
               .from("rooms")
               .insert({
-
-                room_name:
-                  document
-                    .getElementById(
-                      "roomName"
-                    )
-                    .value
-                    .trim(),
-
-                room_code:
-                  document
-                    .getElementById(
-                      "roomCode"
-                    )
-                    .value
-                    .trim(),
-
-                reader_id:
-                  document
-                    .getElementById(
-                      "readerId"
-                    )
-                    .value
-                    .trim(),
-
-                location:
-                  document
-                    .getElementById(
-                      "roomLocation"
-                    )
-                    .value
-                    .trim(),
-
-                status:
-                  "active"
-
+                ...fields,
+                reader_id:readerId,
+                status:"active"
               });
-
 
           if(error){
             throw error;
           }
 
+          await logActivity(
+            "ADD_ROOM",
+            "Added " + fields.room_name
+          );
 
           closeModal();
 
           showToast(
-            "RFID room added.",
+            fields.room_name + " added.",
             "success"
           );
 
@@ -8831,9 +8889,14 @@ function openRoomModal(){
         }catch(error){
 
           showToast(
-            error.message,
+            roomSaveErrorMessage(error),
             "error"
           );
+
+          if(submitButton){
+            submitButton.disabled = false;
+            submitButton.textContent = "Add Room";
+          }
         }
       }
     );
@@ -8863,7 +8926,9 @@ function editRoom(id){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -8875,41 +8940,35 @@ function editRoom(id){
 
       <div class="form-group">
 
-        <label>
-          Room Name
+        <label for="editRoomNumber">
+          Room Number
         </label>
 
         <input
-          id="editRoomName"
+          id="editRoomNumber"
           value="${escapeHTML(
-            room.room_name
+            roomNumberFromName(
+              room.room_name
+            )
           )}"
+          maxlength="10"
+          autocomplete="off"
+          pattern="[A-Za-z0-9\\- ]{1,10}"
+          title="Letters and numbers only, e.g. 201"
+          oninput="updateRoomPreview('editRoomNumber','editRoomPreview')"
           required
         >
+
+        <p id="editRoomPreview" class="form-hint" style="margin-top:7px">
+          Type the room number, e.g. 201.
+        </p>
 
       </div>
 
 
       <div class="form-group">
 
-        <label>
-          Room Code
-        </label>
-
-        <input
-          id="editRoomCode"
-          value="${escapeHTML(
-            room.room_code
-          )}"
-          required
-        >
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label>
+        <label for="editReaderId">
           Reader ID
         </label>
 
@@ -8953,22 +9012,6 @@ function editRoom(id){
       </div>
 
 
-      <div class="form-group">
-
-        <label>
-          Location
-        </label>
-
-        <input
-          id="editRoomLocation"
-          value="${escapeHTML(
-            room.location || ""
-          )}"
-        >
-
-      </div>
-
-
       <div class="modal-actions">
 
         <button
@@ -8979,9 +9022,7 @@ function editRoom(id){
           Cancel
         </button>
 
-        <button
-          class="primary-btn"
-        >
+        <button type="submit" class="primary-btn">
           Save Changes
         </button>
 
@@ -8991,6 +9032,11 @@ function editRoom(id){
   `);
 
 
+  updateRoomPreview(
+    "editRoomNumber",
+    "editRoomPreview"
+  );
+
   setupRFIDAutoScan(
     "editReaderId",
     "editReaderIdStatus"
@@ -8998,16 +9044,52 @@ function editRoom(id){
 
 
   document
-    .getElementById(
-      "editRoomForm"
-    )
+    .getElementById("editRoomForm")
     .addEventListener(
       "submit",
       async e=>{
 
         e.preventDefault();
 
+        const submitButton =
+          e.currentTarget.querySelector(
+            'button[type="submit"]'
+          );
+
         try{
+
+          const number =
+            cleanRoomNumber(
+              document
+                .getElementById("editRoomNumber")
+                .value
+            );
+
+          const readerId =
+            document
+              .getElementById("editReaderId")
+              .value
+              .trim();
+
+          if(!number){
+            throw new Error(
+              "Enter the room number."
+            );
+          }
+
+          if(!readerId){
+            throw new Error(
+              "Enter or scan the reader ID."
+            );
+          }
+
+          if(submitButton){
+            submitButton.disabled = true;
+            submitButton.textContent = "Saving…";
+          }
+
+          const fields =
+            roomFieldsFromNumber(number);
 
           const {
             error
@@ -9015,50 +9097,17 @@ function editRoom(id){
             await db
               .from("rooms")
               .update({
-
-                room_name:
-                  document
-                    .getElementById(
-                      "editRoomName"
-                    )
-                    .value
-                    .trim(),
-
-                room_code:
-                  document
-                    .getElementById(
-                      "editRoomCode"
-                    )
-                    .value
-                    .trim(),
-
-                reader_id:
-                  document
-                    .getElementById(
-                      "editReaderId"
-                    )
-                    .value
-                    .trim(),
-
-                location:
-                  document
-                    .getElementById(
-                      "editRoomLocation"
-                    )
-                    .value
-                    .trim()
-
+                ...fields,
+                reader_id:readerId
               })
               .eq(
                 "id",
                 id
               );
 
-
           if(error){
             throw error;
           }
-
 
           closeModal();
 
@@ -9072,9 +9121,14 @@ function editRoom(id){
         }catch(error){
 
           showToast(
-            error.message,
+            roomSaveErrorMessage(error),
             "error"
           );
+
+          if(submitButton){
+            submitButton.disabled = false;
+            submitButton.textContent = "Save Changes";
+          }
         }
       }
     );
