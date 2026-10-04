@@ -620,6 +620,9 @@ tr:hover td{
 }
 
 .toast{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
   min-width:280px;
   max-width:380px;
   background:#222;
@@ -627,6 +630,51 @@ tr:hover td{
   padding:14px 17px;
   border-radius:9px;
   box-shadow:var(--shadow);
+  animation:toastIn .25s ease;
+}
+
+.toast.toast-hide{
+  opacity:0;
+  transform:translateX(14px);
+  transition:opacity .2s ease,transform .2s ease;
+}
+
+.toast-icon{
+  flex-shrink:0;
+  margin-top:1px;
+  font-weight:800;
+}
+
+.toast-message{
+  flex:1;
+  line-height:1.45;
+}
+
+.toast-close{
+  flex-shrink:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  font-size:17px;
+  line-height:1;
+  padding:0;
+  opacity:.7;
+  cursor:pointer;
+}
+
+.toast-close:hover{
+  opacity:1;
+}
+
+@keyframes toastIn{
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
 .toast.success{
@@ -1483,6 +1531,21 @@ tr:hover td{
   color:var(--muted);
 }
 
+.table-empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:30px 12px;
+  color:var(--muted);
+  text-align:center;
+}
+
+.table-empty-icon{
+  font-size:23px;
+  opacity:.5;
+}
+
 @media(max-width:1000px){
   .sidebar{
     width:260px;
@@ -1612,6 +1675,7 @@ tr:hover td{
   *::after{
     scroll-behavior:auto!important;
     transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
   }
 }
 </style>
@@ -1846,7 +1910,29 @@ function escapeHTML(value){
 }
 
 
+function emptyRowHTML(colspan,message,icon="📭"){
+
+  return `
+    <tr>
+      <td colspan="${colspan}">
+        <div class="table-empty">
+          <span class="table-empty-icon" aria-hidden="true">${icon}</span>
+          <span>${escapeHTML(message)}</span>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+
 function showToast(message,type=""){
+
+  const icons = {
+    success:"✓",
+    error:"✕",
+    warning:"⚠",
+    "":"ℹ"
+  };
 
   const container =
     document.getElementById("toastContainer");
@@ -1857,14 +1943,140 @@ function showToast(message,type=""){
   toast.className =
     "toast " + type;
 
-  toast.textContent =
-    message;
+  toast.setAttribute(
+    "role",
+    type === "error" ? "alert" : "status"
+  );
+
+  toast.innerHTML = `
+    <span class="toast-icon" aria-hidden="true">${
+      icons[type] || icons[""]
+    }</span>
+    <span class="toast-message"></span>
+    <button
+      type="button"
+      class="toast-close"
+      aria-label="Dismiss notification"
+    >×</button>
+  `;
+
+  toast.querySelector(
+    ".toast-message"
+  ).textContent = message;
 
   container.appendChild(toast);
 
-  setTimeout(()=>{
-    toast.remove();
-  },3500);
+  let dismissTimer;
+
+  const dismiss = ()=>{
+
+    clearTimeout(dismissTimer);
+
+    toast.classList.add("toast-hide");
+
+    setTimeout(()=>{
+      toast.remove();
+    },200);
+  };
+
+  const scheduleDismiss = ()=>{
+
+    dismissTimer =
+      setTimeout(dismiss,4500);
+  };
+
+  toast
+    .querySelector(".toast-close")
+    .addEventListener("click",dismiss);
+
+  toast.addEventListener(
+    "mouseenter",
+    ()=>clearTimeout(dismissTimer)
+  );
+
+  toast.addEventListener(
+    "mouseleave",
+    scheduleDismiss
+  );
+
+  scheduleDismiss();
+}
+
+
+function friendlyErrorMessage(error,fallback){
+
+  const fallbackText =
+    fallback ||
+    "Something went wrong. Please try again.";
+
+  if(!error){
+    return fallbackText;
+  }
+
+  const code =
+    error.code || "";
+
+  const raw =
+    String(
+      error.message ||
+      error.error_description ||
+      ""
+    );
+
+  if(code === "23505"){
+    return "That value is already in use. Please use a different one.";
+  }
+
+  if(code === "23503"){
+    return "This record is linked to other data, so that change can't be made right now.";
+  }
+
+  if(code === "23502"){
+    return "Please fill in all required fields.";
+  }
+
+  if(code === "22P02"){
+    return "One of the values entered isn't valid. Please check the form and try again.";
+  }
+
+  if(code === "42501"){
+    return "You don't have permission to do that.";
+  }
+
+  if(
+    raw.includes("Failed to fetch") ||
+    raw.includes("NetworkError")
+  ){
+    return "Can't reach the server. Check your internet connection and try again.";
+  }
+
+  if(
+    raw.toLowerCase().includes("jwt") ||
+    raw.toLowerCase().includes("session")
+  ){
+    return "Your sign-in session has expired. Refresh the page and sign in again.";
+  }
+
+  if(
+    raw &&
+    raw.length < 140 &&
+    !/violates|constraint|column \"|relation \"|syntax error|duplicate key/i.test(raw)
+  ){
+    return raw;
+  }
+
+  return fallbackText;
+}
+
+
+function showError(error,fallback){
+
+  console.error(error);
+
+  showToast(
+    friendlyErrorMessage(error,fallback),
+    "error"
+  );
 }
 
 
@@ -1899,7 +2111,19 @@ function openModal(html){
 }
 
 
+let activeConfirmResolve = null;
+
 function closeModal(){
+
+  if(activeConfirmResolve){
+
+    const resolve =
+      activeConfirmResolve;
+
+    activeConfirmResolve = null;
+
+    resolve(false);
+  }
 
   document.getElementById(
     "modal"
@@ -1913,6 +2137,92 @@ function closeModal(){
   if(previous?.isConnected){
     previous.focus();
   }
+}
+
+
+function confirmDialog(message,options={}){
+
+  return new Promise(resolve=>{
+
+    activeConfirmResolve = resolve;
+
+    const confirmLabel =
+      options.confirmLabel || "Confirm";
+
+    const cancelLabel =
+      options.cancelLabel || "Cancel";
+
+    const confirmClass =
+      options.tone === "primary"
+        ? "primary-btn"
+        : "danger-btn";
+
+    openModal(`
+
+      <div class="modal-header">
+        <div class="modal-title">
+          ${escapeHTML(
+            options.title || "Please confirm"
+          )}
+        </div>
+      </div>
+
+      <p
+        style="
+          white-space:pre-line;
+          color:#3a3a44;
+          line-height:1.55;
+          margin-bottom:4px
+        "
+      >
+        ${escapeHTML(message)}
+      </p>
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="secondary-btn"
+          id="confirmDialogCancel"
+        >
+          ${escapeHTML(cancelLabel)}
+        </button>
+
+        <button
+          type="button"
+          class="${confirmClass}"
+          id="confirmDialogOk"
+        >
+          ${escapeHTML(confirmLabel)}
+        </button>
+
+      </div>
+    `);
+
+    document
+      .getElementById("confirmDialogOk")
+      .addEventListener("click",()=>{
+
+        const resolveOk =
+          activeConfirmResolve;
+
+        activeConfirmResolve = null;
+
+        closeModal();
+
+        if(resolveOk){
+          resolveOk(true);
+        }
+      });
+
+    document
+      .getElementById("confirmDialogCancel")
+      .addEventListener(
+        "click",
+        closeModal
+      );
+
+  });
 }
 
 
@@ -2453,11 +2763,7 @@ document
 
         console.error(error);
 
-        showToast(
-          error.message ||
-          "Login failed",
-          "error"
-        );
+        showError(error,"Login failed");
       }
     }
   );
@@ -2672,11 +2978,7 @@ async function changePassword(event){
 
     console.error(error);
 
-    showToast(
-      error.message ||
-      "Unable to update password.",
-      "error"
-    );
+    showError(error,"Unable to update password.");
 
     if(submitButton){
       submitButton.disabled = false;
@@ -3177,7 +3479,10 @@ async function loadPage(page){
           "
         >
           ${escapeHTML(
-            error.message
+            friendlyErrorMessage(
+              error,
+              "Something went wrong while loading this page."
+            )
           )}
         </p>
 
@@ -3504,13 +3809,7 @@ function rosterModalHTML(subject,enrolledStudents,availableStudents){
                   </tr>
                 `
               ).join("")
-            : `
-              <tr>
-                <td colspan="4">
-                  No students enrolled in this subject yet.
-                </td>
-              </tr>
-            `
+            : emptyRowHTML(4,"No students enrolled in this subject yet.","🧑‍🎓")
           }
 
         </tbody>
@@ -3600,11 +3899,7 @@ async function openRosterModal(subjectId){
 
     console.error(error);
 
-    showToast(
-      error.message ||
-      "Unable to load this subject's roster.",
-      "error"
-    );
+    showError(error,"Unable to load this subject's roster.");
   }
 }
 
@@ -3648,11 +3943,7 @@ async function addToRoster(subjectId,studentId){
 
     console.error(error);
 
-    showToast(
-      error.message ||
-      "Unable to add this student to the roster.",
-      "error"
-    );
+    showError(error,"Unable to add this student to the roster.");
   }
 }
 
@@ -3660,8 +3951,9 @@ async function addToRoster(subjectId,studentId){
 async function removeFromRoster(subjectId,studentId){
 
   if(
-    !confirm(
-      "Remove this student from the subject's roster?"
+    !await confirmDialog(
+      "Remove this student from the subject's roster?",
+      {title:"Remove From Roster",confirmLabel:"Remove"}
     )
   ){
     return;
@@ -3698,11 +3990,7 @@ async function removeFromRoster(subjectId,studentId){
 
     console.error(error);
 
-    showToast(
-      error.message ||
-      "Unable to remove this student from the roster.",
-      "error"
-    );
+    showError(error,"Unable to remove this student from the roster.");
   }
 }
 
@@ -4358,11 +4646,7 @@ async function createAnnouncement(event){
 
     console.error(error);
 
-    showToast(
-      error.message ||
-      "Unable to post this announcement.",
-      "error"
-    );
+    showError(error,"Unable to post this announcement.");
 
     if(submitButton){
       submitButton.disabled = false;
@@ -4375,8 +4659,9 @@ async function createAnnouncement(event){
 async function deleteAnnouncement(id){
 
   if(
-    !confirm(
-      "Delete this announcement? Students and teachers will no longer see it."
+    !await confirmDialog(
+      "Delete this announcement? Students and teachers will no longer see it.",
+      {title:"Delete Announcement",confirmLabel:"Delete"}
     )
   ){
     return;
@@ -4405,11 +4690,7 @@ async function deleteAnnouncement(id){
 
   }catch(error){
 
-    showToast(
-      error.message ||
-      "Unable to delete this announcement.",
-      "error"
-    );
+    showError(error,"Unable to delete this announcement.");
   }
 }
 
@@ -5570,7 +5851,7 @@ async function renderAccountLinks(){
                 <td>${escapeHTML(student.student_id_number || "-")}</td>
                 <td>${student.auth_user_id ? '<span class="badge badge-present">Linked</span>' : '<span class="badge badge-late">Needs linking</span>'}</td>
               </tr>
-            `).join("") || '<tr><td colspan="3">No student records found.</td></tr>'}
+            `).join("") || emptyRowHTML(3,"No student records found.","🧑‍🎓")}
           </tbody>
         </table>
       </div>
@@ -5620,7 +5901,7 @@ async function linkStudentAccount(event){
     showToast("Student account linked. The student can refresh or sign in again.","success");
     await renderAccountLinks();
   }catch(error){
-    showToast(error.message || "Unable to link the student account.","error");
+    showError(error,"Unable to link the student account.");
 
     if(button){
       button.disabled = false;
@@ -5787,14 +6068,7 @@ function studentTableHTML(students){
                   </tr>
                 `
               ).join("")
-            : `
-
-              <tr>
-                <td colspan="6">
-                  No students found.
-                </td>
-              </tr>
-            `
+            : emptyRowHTML(6,"No students found.","🧑‍🎓")
           }
 
         </tbody>
@@ -5858,7 +6132,9 @@ function openStudentModal(){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -6201,10 +6477,7 @@ async function createStudent(e){
 
     console.error(error);
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -6423,10 +6696,7 @@ async function addStudentLogin(event,studentId){
 
     console.error(error);
 
-    showToast(
-      error.message || "Unable to create the student login.",
-      "error"
-    );
+    showError(error,"Unable to create the student login.");
 
     if(submitButton){
       submitButton.disabled = false;
@@ -6487,7 +6757,9 @@ async function viewStudent(id){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -6628,7 +6900,9 @@ function editStudent(id){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -6913,10 +7187,7 @@ function editStudent(id){
 
           console.error(error);
 
-          showToast(
-            error.message,
-            "error"
-          );
+          showError(error,"Something went wrong. Please try again.");
         }
       }
     );
@@ -6940,9 +7211,12 @@ async function deleteStudentLogin(id){
   }
 
   const confirmed =
-    confirm(
-      "Delete this student's login account?\n\n" +
-      "The student record, RFID UID and attendance history will remain."
+    await confirmDialog(
+      "The student record, RFID UID and attendance history will remain.",
+      {
+        title:"Delete Student Login?",
+        confirmLabel:"Delete Login"
+      }
     );
 
   if(!confirmed){
@@ -6996,10 +7270,7 @@ async function deleteStudentLogin(id){
 
     console.error(error);
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -7135,15 +7406,7 @@ function teacherTableHTML(teachers){
                   </tr>
                 `
               ).join("")
-            : `
-
-              <tr>
-                <td colspan="5">
-                  No teachers found.
-                </td>
-              </tr>
-
-            `
+            : emptyRowHTML(5,"No teachers found.","🧑‍🏫")
           }
 
         </tbody>
@@ -7199,7 +7462,9 @@ function openTeacherModal(){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -7409,10 +7674,7 @@ async function createTeacher(e){
 
     console.error(error);
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -7440,7 +7702,9 @@ function editTeacher(id){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -7624,10 +7888,7 @@ function editTeacher(id){
 
         }catch(error){
 
-          showToast(
-            error.message,
-            "error"
-          );
+          showError(error,"Something went wrong. Please try again.");
         }
       }
     );
@@ -7661,9 +7922,9 @@ async function deleteTeacher(id){
 
 
   if(
-    !confirm(
-      "Delete this teacher login?\n\n" +
-      "Assigned subjects may need to be reassigned."
+    !await confirmDialog(
+      "Assigned subjects may need to be reassigned.",
+      {title:"Delete Teacher Login?",confirmLabel:"Delete Login"}
     )
   ){
     return;
@@ -7718,10 +7979,7 @@ async function deleteTeacher(id){
 
     console.error(error);
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -7858,15 +8116,7 @@ function subjectTableHTML(subjects){
                   </tr>
                 `
               ).join("")
-            : `
-
-              <tr>
-                <td colspan="6">
-                  No subjects found.
-                </td>
-              </tr>
-
-            `
+            : emptyRowHTML(6,"No subjects found.","📚")
           }
 
         </tbody>
@@ -7924,7 +8174,9 @@ function openSubjectModal(){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -8140,10 +8392,7 @@ function openSubjectModal(){
 
           console.error(error);
 
-          showToast(
-            error.message,
-            "error"
-          );
+          showError(error,"Something went wrong. Please try again.");
         }
       }
     );
@@ -8173,7 +8422,9 @@ function editSubject(id){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -8403,10 +8654,7 @@ function editSubject(id){
 
         }catch(error){
 
-          showToast(
-            error.message,
-            "error"
-          );
+          showError(error,"Something went wrong. Please try again.");
         }
       }
     );
@@ -8430,10 +8678,12 @@ async function deleteSubject(id){
   }
 
   if(
-    !confirm(
-      "Delete subject " +
-      subject.subject_code +
-      "?"
+    !await confirmDialog(
+      "This can't be undone. Grades and rosters tied to this subject will be affected.",
+      {
+        title:"Delete " + subject.subject_code + "?",
+        confirmLabel:"Delete Subject"
+      }
     )
   ){
     return;
@@ -8466,10 +8716,7 @@ async function deleteSubject(id){
 
   }catch(error){
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -8693,15 +8940,7 @@ async function renderRooms(){
                     </tr>
                   `
                 ).join("")
-              : `
-
-                <tr>
-                  <td colspan="5">
-                    No rooms yet. Click "+ Add RFID Room" to add one.
-                  </td>
-                </tr>
-
-              `
+              : emptyRowHTML(5,'No rooms yet. Click "+ Add RFID Room" to add one.',"📡")
             }
 
           </tbody>
@@ -9182,10 +9421,7 @@ async function toggleRoom(id){
 
   }catch(error){
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -9372,7 +9608,9 @@ function openAssignmentModal(){
 
       <button
         class="close-btn"
+        type="button"
         onclick="closeModal()"
+        aria-label="Close dialog"
       >
         ×
       </button>
@@ -9587,10 +9825,7 @@ function openAssignmentModal(){
 
         }catch(error){
 
-          showToast(
-            error.message,
-            "error"
-          );
+          showError(error,"Something went wrong. Please try again.");
         }
       }
     );
@@ -9600,8 +9835,9 @@ function openAssignmentModal(){
 async function deleteAssignment(id){
 
   if(
-    !confirm(
-      "Remove this teacher assignment?"
+    !await confirmDialog(
+      "The teacher will no longer see this class or be able to take attendance for it.",
+      {title:"Remove This Assignment?",confirmLabel:"Remove"}
     )
   ){
     return;
@@ -9634,10 +9870,7 @@ async function deleteAssignment(id){
 
   }catch(error){
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -9651,9 +9884,10 @@ function attendanceTableHTML(records){
   if(!records.length){
 
     return `
-      <p style="color:var(--muted)">
-        No attendance records found.
-      </p>
+      <div class="table-empty">
+        <span class="table-empty-icon" aria-hidden="true">🗓️</span>
+        <span>No attendance records found.</span>
+      </div>
     `;
   }
 
@@ -10363,10 +10597,7 @@ async function startSession(){
 
   }catch(error){
 
-    showToast(
-      error.message,
-      "error"
-    );
+    showError(error,"Something went wrong. Please try again.");
   }
 }
 
@@ -10484,7 +10715,7 @@ async function recordRFIDScan(event){
       input.focus();
     }
 
-    showToast(error.message || "Unable to record the RFID scan.","error");
+    showError(error,"Unable to record the RFID scan.");
   }
 }
 
@@ -10940,13 +11171,7 @@ function gradeRecordsTableHTML(records,showStudent=false){
                 </td>
               </tr>
             `).join("")
-            : `
-              <tr>
-                <td colspan="${showStudent ? 11 : 9}">
-                  No grades have been recorded yet.
-                </td>
-              </tr>
-            `
+            : emptyRowHTML(showStudent ? 11 : 9,"No grades have been recorded yet.","📊")
           }
         </tbody>
 
@@ -11569,11 +11794,7 @@ function openGradeModal(studentId,subjectId){
           );
 
         }catch(error){
-          showToast(
-            error.message ||
-            "Unable to save these grades.",
-            "error"
-          );
+          showError(error,"Unable to save these grades.");
         }
 
       }
@@ -11890,7 +12111,7 @@ function openCorrectionRequestModal(){
         closeModal();
         showToast("Correction request submitted.","success");
       }catch(error){
-        showToast(error.message || "Unable to submit request.","error");
+        showError(error,"Unable to submit request.");
       }
     });
 }
@@ -12066,7 +12287,7 @@ function correctionRequestsTableHTML(requests){
                 </td>
               </tr>
             `).join("")
-            : `<tr><td colspan="7">No correction requests found.</td></tr>`
+            : emptyRowHTML(7,"No correction requests found.","📝")
           }
         </tbody>
       </table>
@@ -12177,7 +12398,7 @@ function openCorrectionReviewModal(requestId){
           "success"
         );
       }catch(error){
-        showToast(error.message || "Unable to review this request.","error");
+        showError(error,"Unable to review this request.");
       }
     });
 }
@@ -12859,10 +13080,7 @@ async function renderSettings(){
 
         }catch(error){
 
-          showToast(
-            error.message,
-            "error"
-          );
+          showError(error,"Something went wrong. Please try again.");
         }
       }
     );
